@@ -10,13 +10,13 @@ Sind alle vier richtig angeordnet, erscheint nach "Bestätigen" ein Popup mit de
 ## Aufbau
 Veröffentlicht wird nur der Ordner `site/` (siehe `netlify.toml`).
 - `site/index.html` : Startseite mit Übersicht der 4 Spiele, Fortschritt, Bild mit Zielplätzen, Ablage der Motive und Prüfen
-- `site/spiele/` : memory.html, quiz.html, schiebepuzzle.html, kerzen.html
+- `site/spiele/` : memory.html, quiz.html, schiebepuzzle.html, labyrinth.html
 - `site/js/config.js` : Name der beschenkten Person, Nachricht im Popup (Text, Link, Gruß) und Quizfragen
 - `site/js/motive.js` : die vier Motive und das Hintergrundbild als SVG, dazu die Zielplätze (Raster 400 x 300)
 - `site/js/fortschritt.js` : Speichern des Fortschritts, Zuordnung Spiel zu Motiv, Gewinn-Overlay, Konfetti
 - `werkzeuge/server.ps1` : lokaler Testserver ohne Python/Node (`powershell -ExecutionPolicy Bypass -File werkzeuge\server.ps1`, dann http://localhost:8080)
 
-Zuordnung Spiel zu Motiv: Memory → Baum, Quiz → Prinzessin, Schiebepuzzle → Burg, Kerzen auspusten → Ritter.
+Zuordnung Spiel zu Motiv: Memory → Baum, Quiz → Prinzessin, Schiebepuzzle → Burg, Ritter-Labyrinth → Ritter.
 
 ## Technik
 - Rein statische Website: HTML, CSS und JavaScript, kein Server, keine Datenbank
@@ -35,7 +35,9 @@ Zuordnung Spiel zu Motiv: Memory → Baum, Quiz → Prinzessin, Schiebepuzzle �
 - Kein Komma vor "und"
 
 ## Offene Punkte
-- [ ] Name der beschenkten Person
-- [ ] Nachricht zum Geschenk und Link
-- [ ] Quizfragen über die beschenkte Person
+- [x] Name der beschenkten Person: Anna
+- [x] Geschenk-Link: https://www.bodaborg.de/bochum/
+- [ ] Nachricht zum Geschenk (Text folgt)
+- [x] Spiele: Quiz, Ritter-Labyrinth (Geschicklichkeit), Memory, Schiebepuzzle
+- [ ] Quizfragen über Anna
 - [ ] Hosting festlegen

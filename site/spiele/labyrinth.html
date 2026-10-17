@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Ritter-Labyrinth</title>
+  <link rel="stylesheet" href="../css/stil.css">
+  <style>
+    .feld {
+      width: 100%; max-width: 420px; margin: 0 auto;
+      border-radius: var(--radius); overflow: hidden; box-shadow: var(--schatten);
+      touch-action: none; user-select: none; -webkit-user-select: none;
+      background: #cfeebc;
+    }
+    .feld canvas { display: block; width: 100%; touch-action: none; }
+    .feld.autsch { animation: autsch 0.35s; }
+    @keyframes autsch { 0%, 100% { box-shadow: var(--schatten); } 40% { box-shadow: 0 0 0 6px var(--akzent); } }
+    .werte { display: flex; justify-content: space-between; font-weight: 600; color: var(--text-leise); margin-bottom: 12px; }
+    #meldung { min-height: 1.5em; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <main class="seite">
+    <a class="zurueck" href="../index.html">‹ Übersicht</a>
+    <header class="kopf">
+      <h1>🏰 Ritter-Labyrinth</h1>
+      <p class="unterzeile">Führe den Ritter durch das Heckenlabyrinth zur Burg. Wische dazu irgendwo auf dem Spielfeld, der Ritter bewegt sich mit. Berührt er eine Hecke, muss er zurück zum Start.</p>
+    </header>
+    <div class="werte"><span>Versuch: <b id="versuch">1</b></span><span id="hinweis">Ziel: unten rechts</span></div>
+    <div class="feld" id="feld"><canvas id="leinwand"></canvas></div>
+    <p class="mitte" id="meldung" aria-live="polite"></p>
+    <p class="mitte"><button class="knopf zweit" id="neu" type="button">Neues Labyrinth</button></p>
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/motive.js"></script>
+  <script src="../js/fortschritt.js"></script>
+  <script>
+    (function () {
+      var SPALTEN = 6, ZEILEN = 8;
+      var feld = document.getElementById("feld");
+      var leinwand = document.getElementById("leinwand");
+      var g = leinwand.getContext("2d");
+      var versuchEl = document.getElementById("versuch");
+      var meldung = document.getElementById("meldung");
+
+      function bildAus(svg) {
+        var img = new Image();
+        img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+        img.onload = zeichnen;
+        return img;
+      }
+      var ritterBild = bildAus(Motive.MOTIVE.ritter.svg);
+      var burgBild = bildAus(Motive.MOTIVE.burg.svg);
+
+      var zelle, breite, hoehe, waende, ritter, radius, versuch = 1, fertig = false, sperre = false;
+
+      // Labyrinth erzeugen (Tiefensuche mit Rücksprung), jede Zelle merkt sich, ob rechts und unten eine Hecke steht
+      function erzeugen() {
+        var rechts = [], unten = [], besucht = [];
+        for (var i = 0; i < SPALTEN * ZEILEN; i++) { rechts.push(true); unten.push(true); besucht.push(false); }
+        var stapel = [0];
+        besucht[0] = true;
+        while (stapel.length) {
+          var z = stapel[stapel.length - 1], x = z % SPALTEN, y = Math.floor(z / SPALTEN), n = [];
+          if (x > 0 && !besucht[z - 1]) n.push(z - 1);
+          if (x < SPALTEN - 1 && !besucht[z + 1]) n.push(z + 1);
+          if (y > 0 && !besucht[z - SPALTEN]) n.push(z - SPALTEN);
+          if (y < ZEILEN - 1 && !besucht[z + SPALTEN]) n.push(z + SPALTEN);
+          if (!n.length) { stapel.pop(); continue; }
+          var w = n[Math.floor(Math.random() * n.length)];
+          if (w === z + 1) rechts[z] = false;
+          else if (w === z - 1) rechts[w] = false;
+          else if (w === z + SPALTEN) unten[z] = false;
+          else unten[w] = false;
+          besucht[w] = true;
+          stapel.push(w);
+        }
+        return { rechts: rechts, unten: unten };
+      }
+
+      var plan;
+
+      function vermessen() {
+        var dpr = window.devicePixelRatio || 1;
+        breite = feld.clientWidth;
+        zelle = breite / SPALTEN;
+        hoehe = zelle * ZEILEN;
+        leinwand.width = Math.round(breite * dpr);
+        leinwand.height = Math.round(hoehe * dpr);
+        leinwand.style.height = hoehe + "px";
+        g.setTransform(dpr, 0, 0, dpr, 0, 0);
+        radius = zelle * 0.2;
+
+        // Hecken als Linienstücke in Pixeln
+        waende = [];
+        var R = breite, U = hoehe;
+        waende.push([0, 0, R, 0], [0, U, R, U], [0, 0, 0, U], [R, 0, R, U]);
+        for (var z = 0; z < SPALTEN * ZEILEN; z++) {
+          var x = z % SPALTEN, y = Math.floor(z / SPALTEN);
+          if (plan.rechts[z] && x < SPALTEN - 1) waende.push([(x + 1) * zelle, y * zelle, (x + 1) * zelle, (y + 1) * zelle]);
+          if (plan.unten[z] && y < ZEILEN - 1) waende.push([x * zelle, (y + 1) * zelle, (x + 1) * zelle, (y + 1) * zelle]);
+        }
+      }
+
+      function start() { return { x: zelle / 2, y: zelle / 2 }; }
+
+      function neu() {
+        plan = erzeugen();
+        vermessen();
+        ritter = start();
+        fertig = false;
+        meldung.textContent = "";
+        zeichnen();
+      }
+
+      function zeichnen() {
+        if (!plan) return;
+        g.clearRect(0, 0, breite, hoehe);
+        g.fillStyle = "#cfeebc";
+        g.fillRect(0, 0, breite, hoehe);
+        // Weg zum Ziel leicht markieren
+        g.fillStyle = "rgba(255, 226, 122, 0.55)";
+        g.fillRect((SPALTEN - 1) * zelle + 3, (ZEILEN - 1) * zelle + 3, zelle - 6, zelle - 6);
+        g.fillStyle = "rgba(255, 255, 255, 0.5)";
+        g.fillRect(3, 3, zelle - 6, zelle - 6);
+
+        g.strokeStyle = "#2f7d3a";
+        g.lineCap = "round";
+        g.lineWidth = Math.max(5, zelle * 0.12);
+        g.beginPath();
+        waende.forEach(function (w) { g.moveTo(w[0], w[1]); g.lineTo(w[2], w[3]); });
+        g.stroke();
+        g.strokeStyle = "#45a352";
+        g.lineWidth = Math.max(2, zelle * 0.05);
+        g.stroke();
+
+        var bs = zelle * 0.86;
+        if (burgBild.complete) g.drawImage(burgBild, (SPALTEN - 0.5) * zelle - bs / 2, (ZEILEN - 0.5) * zelle - bs / 2, bs, bs);
+        var rs = radius * 3.2;
+        if (ritterBild.complete) g.drawImage(ritterBild, ritter.x - rs / 2, ritter.y - rs / 2 - radius * 0.3, rs, rs);
+      }
+
+      // Abstand Punkt zu Linienstück
+      function abstand(px, py, w) {
+        var dx = w[2] - w[0], dy = w[3] - w[1];
+        var t = Math.max(0, Math.min(1, ((px - w[0]) * dx + (py - w[1]) * dy) / (dx * dx + dy * dy)));
+        return Math.hypot(px - (w[0] + t * dx), py - (w[1] + t * dy));
+      }
+
+      function trifftHecke(x, y) {
+        var dicke = Math.max(5, zelle * 0.12) / 2;
+        for (var i = 0; i < waende.length; i++) if (abstand(x, y, waende[i]) < radius + dicke) return true;
+        return false;
+      }
+
+      function bewegen(dx, dy) {
+        if (fertig || sperre) return;
+        var schritte = Math.ceil(Math.hypot(dx, dy) / 2) || 1;
+        for (var i = 0; i < schritte; i++) {
+          var nx = ritter.x + dx / schritte, ny = ritter.y + dy / schritte;
+          if (trifftHecke(nx, ny)) return autsch();
+          ritter.x = nx; ritter.y = ny;
+        }
+        var zx = (SPALTEN - 0.5) * zelle, zy = (ZEILEN - 0.5) * zelle;
+        if (Math.hypot(ritter.x - zx, ritter.y - zy) < zelle * 0.3) {
+          fertig = true;
+          zeichnen();
+          meldung.textContent = "Der Ritter ist an der Burg angekommen!";
+          setTimeout(function () { Fortschritt.gewinnen("labyrinth"); }, 400);
+          return;
+        }
+        zeichnen();
+      }
+
+      function autsch() {
+        sperre = true;
+        zug = null;
+        feld.classList.remove("autsch");
+        void feld.offsetWidth;
+        feld.classList.add("autsch");
+        if (navigator.vibrate) navigator.vibrate(120);
+        meldung.textContent = "Autsch, die Hecke! Zurück zum Start.";
+        setTimeout(function () {
+          ritter = start();
+          versuch++;
+          versuchEl.textContent = versuch;
+          sperre = false;
+          zeichnen();
+        }, 450);
+      }
+
+      // Wischen: der Ritter folgt der Fingerbewegung, egal wo auf dem Feld gewischt wird
+      var zug = null;
+      leinwand.addEventListener("pointerdown", function (e) {
+        e.preventDefault();
+        try { leinwand.setPointerCapture(e.pointerId); } catch (fehler) {}
+        zug = { id: e.pointerId, x: e.clientX, y: e.clientY };
+        if (!sperre && !fertig) meldung.textContent = "";
+      });
+      leinwand.addEventListener("pointermove", function (e) {
+        if (!zug || e.pointerId !== zug.id) return;
+        var dx = e.clientX - zug.x, dy = e.clientY - zug.y;
+        zug.x = e.clientX; zug.y = e.clientY;
+        bewegen(dx, dy);
+      });
+      function ende(e) { if (zug && e.pointerId === zug.id) zug = null; }
+      leinwand.addEventListener("pointerup", ende);
+      leinwand.addEventListener("pointercancel", ende);
+
+      window.addEventListener("resize", function () {
+        var alteZelle = zelle;
+        vermessen();
+        ritter.x *= zelle / alteZelle;
+        ritter.y *= zelle / alteZelle;
+        zeichnen();
+      });
+
+      document.getElementById("neu").addEventListener("click", function () {
+        versuch = 1;
+        versuchEl.textContent = 1;
+        neu();
+      });
+      neu();
+    })();
+  </script>
+</body>
+</html>

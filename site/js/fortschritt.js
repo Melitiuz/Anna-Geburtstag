@@ -6,7 +6,7 @@
     { id: "memory", titel: "Memory", symbol: "🃏", datei: "spiele/memory.html", text: "Finde alle Paare", motiv: "baum" },
     { id: "quiz", titel: "Quiz", symbol: "❓", datei: "spiele/quiz.html", text: "Wie gut kennst du dich aus?", motiv: "prinzessin" },
     { id: "schiebe", titel: "Schiebepuzzle", symbol: "🧩", datei: "spiele/schiebepuzzle.html", text: "Bring die Zahlen in Ordnung", motiv: "burg" },
-    { id: "kerzen", titel: "Kerzen auspusten", symbol: "🕯️", datei: "spiele/kerzen.html", text: "Schnelle Finger gefragt", motiv: "ritter" }
+    { id: "labyrinth", titel: "Ritter-Labyrinth", symbol: "🏰", datei: "spiele/labyrinth.html", text: "Führe den Ritter zur Burg", motiv: "ritter" }
   ];
 
   var speicherErsatz = {};

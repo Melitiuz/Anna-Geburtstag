@@ -1,13 +1,14 @@
 // Alles, was persönlich angepasst werden soll, steht hier.
 window.GEBURTSTAG = {
-  name: "Geburtstagskind",
+  name: "Anna",
 
   // Erscheint als Popup, wenn alle vier Motive richtig im Bild liegen.
   // link ist optional: leer lassen ("") wenn kein Knopf erscheinen soll.
   nachricht: {
-    titel: "Herzlichen Glückwunsch!",
+    // Text ist noch ein Platzhalter und wird später ergänzt
+    titel: "Herzlichen Glückwunsch, Anna!",
     text: "Du hast alle Spiele gemeistert und das Bild vervollständigt. Ich wünsche dir einen wunderschönen Geburtstag voller Freude und Überraschungen. Dein Geschenk wartet hier auf dich:",
-    link: "https://example.com",
+    link: "https://www.bodaborg.de/bochum/",
     linkText: "Zum Geschenk",
     gruss: "Alles Liebe"
   },
