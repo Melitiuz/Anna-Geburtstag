@@ -16,8 +16,6 @@
     .buehne canvas { display: block; width: 100%; touch-action: none; }
     #meldung { min-height: 1.5em; font-weight: 600; text-align: center; margin-top: 12px; }
     .steuerung { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 12px; }
-    .legende { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 0.88rem; color: var(--text-leise); margin-bottom: 14px; }
-    .legende b { color: var(--text); }
   </style>
 </head>
 <body>
@@ -25,14 +23,8 @@
     <a class="zurueck" href="../index.html">‹ Übersicht</a>
     <header class="kopf">
       <h1>🪵 Brückenritt</h1>
-      <p class="unterzeile">Der Ritter jagt zur Burg, doch davor liegt ein Burggraben. Sammle unterwegs Holz für die Brücke. Jeder Zusammenstoß kostet <b id="t-verlust">3</b> Hölzer. Für die Brücke brauchst du mindestens <b id="t-noetig">20</b> von <b id="t-gesamt">30</b> Hölzern.</p>
+      <p class="unterzeile">Der Ritter jagt zur Burg, doch davor liegt ein Burggraben. Sammle unterwegs Holz für die Brücke.</p>
     </header>
-    <div class="legende">
-      <span><b>Kurz tippen:</b> kleiner Sprung</span>
-      <span><b>Gedrückt halten:</b> hoher Sprung</span>
-      <span><b>Hohe Hecke:</b> nur hoch drüber</span>
-      <span><b>Tiefer Ast:</b> nicht springen!</span>
-    </div>
     <div class="buehne" id="buehne"><canvas id="leinwand"></canvas></div>
     <p id="meldung" aria-live="polite"></p>
     <div class="steuerung"><button class="knopf" type="button" id="aktion">Losreiten</button></div>
@@ -45,9 +37,9 @@
     (function () {
       // Virtuelles Spielfeld, wird auf die Bildschirmbreite skaliert
       var W = 400, H = 225, BODEN = 190, RX = 70, GRABEN_SCHIRM = 190;
-      var HOLZ_GESAMT = 30, HOLZ_NOETIG = Math.ceil(HOLZ_GESAMT * 2 / 3), VERLUST = 3;
+      var HOLZ_GESAMT = 30, HOLZ_NOETIG = Math.ceil(HOLZ_GESAMT * 2 / 3), VERLUST = 4;
       var GRAVITATION = 1700, SPRUNG = -650, ABBRUCH = 0.35;   // Loslassen bremst den Aufstieg: kurzer Tipp = kleiner Sprung
-      var TEMPO_START = 190, TEMPO_ENDE = 300;
+      var TEMPO_START = 220, TEMPO_ENDE = 340;
       var AST_UNTEN = BODEN - 46, HOLZ_BODEN = BODEN - 16, HOLZ_NIEDRIG = BODEN - 50, HOLZ_HOCH = BODEN - 95;
 
       var buehne = document.getElementById("buehne");
@@ -55,9 +47,6 @@
       var g = leinwand.getContext("2d");
       var meldung = document.getElementById("meldung");
       var knopf = document.getElementById("aktion");
-      document.getElementById("t-noetig").textContent = HOLZ_NOETIG;
-      document.getElementById("t-gesamt").textContent = HOLZ_GESAMT;
-      document.getElementById("t-verlust").textContent = VERLUST;
 
       function bildAus(svg) {
         var img = new Image();
@@ -96,12 +85,19 @@
         holzBoden: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_BODEN }); l.push({ art: "holz", x: x + 46, y: HOLZ_BODEN }); return { holz: 2, breite: 72 }; },
         holzNiedrig: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_NIEDRIG }); return { holz: 1, breite: 26 }; },
         holzHoch: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_HOCH }); return { holz: 1, breite: 26 }; },
+        steinAst: function (x, l) {
+          // Kleiner Sprung über den Stein, dann sofort unten bleiben: dahinter hängt ein Ast
+          var abstand = 30 + tempoBei(x) * 0.62;
+          l.push({ art: "stein", x: x, w: 28, h: 22 }); l.push({ art: "ast", x: x + abstand, w: 70 }); l.push({ art: "holz", x: x + abstand + 22, y: HOLZ_BODEN });
+          return { holz: 1, breite: abstand + 70 };
+        },
+        wolfPaar: function (x, l) { l.push({ art: "wolf", x: x + 120, w: 36, h: 22, vx: -90 }); l.push({ art: "wolf", x: x + 185, w: 36, h: 22, vx: -90 }); return { holz: 0, breite: 110 }; },
         holzBogen: function (x, l) {
           l.push({ art: "holz", x: x, y: BODEN - 38 }); l.push({ art: "holz", x: x + 40, y: BODEN - 58 }); l.push({ art: "holz", x: x + 80, y: BODEN - 38 });
           return { holz: 3, breite: 106 };
         }
       };
-      var GEWICHTE = { stein: 3, steinMitHolz: 3, doppelstein: 2, wolf: 3, hecke: 2, heckeMitHolz: 3, ast: 3, holzBoden: 2, holzNiedrig: 2, holzHoch: 2, holzBogen: 2 };
+      var GEWICHTE = { stein: 2, steinMitHolz: 3, doppelstein: 3, wolf: 3, wolfPaar: 2, hecke: 3, heckeMitHolz: 3, ast: 2, steinAst: 3, holzBoden: 1, holzNiedrig: 2, holzHoch: 3, holzBogen: 2 };
 
       function probeHolz(name) { return MUSTER[name](0, []).holz; }
       function musterWaehlen(rest) {
@@ -111,17 +107,24 @@
         return namen[namen.length - 1];
       }
 
+      // Zwei Durchgänge: Der erste schätzt die Streckenlänge, damit im zweiten das Tempo an jeder Stelle stimmt
+      // (Abstände hängen vom Tempo ab, das Tempo von der Gesamtlänge).
       function streckeBauen() {
-        var liste = [], x = 380, holzZahl = 0, letztes = "";
-        grabenX = 9000; // vorläufig, damit tempoBei während des Bauens rechnen kann
-        while (holzZahl < HOLZ_GESAMT) {
-          var name = musterWaehlen(HOLZ_GESAMT - holzZahl);
-          if (name === letztes && Math.random() < 0.7) name = musterWaehlen(HOLZ_GESAMT - holzZahl);
-          var e = MUSTER[name](x, liste);
-          holzZahl += e.holz;
-          letztes = name;
-          // Abstand zum nächsten Muster: genug Zeit für einen hohen Sprung plus Reaktion, bei hohem Tempo enger getaktet
-          x += e.breite + tempoBei(x) * zufall(0.8, 1.15);
+        var schaetzung = 7000, liste, x;
+        for (var durchgang = 0; durchgang < 2; durchgang++) {
+          grabenX = schaetzung;
+          liste = []; x = 380;
+          var holzZahl = 0, letztes = "";
+          while (holzZahl < HOLZ_GESAMT) {
+            var name = musterWaehlen(HOLZ_GESAMT - holzZahl);
+            if (name === letztes && Math.random() < 0.7) name = musterWaehlen(HOLZ_GESAMT - holzZahl);
+            var e = MUSTER[name](x, liste);
+            holzZahl += e.holz;
+            letztes = name;
+            // Abstand zum nächsten Muster: knapp genug Zeit für einen hohen Sprung plus Reaktion
+            x += e.breite + tempoBei(x) * zufall(0.65, 0.95);
+          }
+          schaetzung = x + 220;
         }
         grabenX = x + 220;
         return liste;
@@ -397,10 +400,7 @@
         if (phase === "bereit") {
           g.fillStyle = "rgba(0,0,0,0.5)"; g.fillRect(-5, -5, W + 10, H + 10);
           g.fillStyle = "#fff"; g.textAlign = "center";
-          g.font = "bold 18px sans-serif"; g.fillText("Tippe zum Losreiten", W / 2, H / 2 - 14);
-          g.font = "13px sans-serif";
-          g.fillText("Kurz tippen = kleiner Sprung", W / 2, H / 2 + 10);
-          g.fillText("Gedrückt halten = hoher Sprung", W / 2, H / 2 + 28);
+          g.font = "bold 18px sans-serif"; g.fillText("Tippe zum Losreiten", W / 2, H / 2);
           g.textAlign = "left";
         }
         g.restore();
