@@ -10,15 +10,15 @@
     .antworten { display: grid; gap: 10px; margin-top: 16px; }
     .antwort {
       min-height: 52px; padding: 12px 16px; text-align: left;
-      border: 2px solid var(--rand); border-radius: 14px; background: #fff;
+      border: 2px solid var(--rand); border-radius: 10px; background: var(--karte-2);
       font: inherit; font-size: 1rem; font-weight: 600; color: var(--text); cursor: pointer;
       touch-action: manipulation;
     }
-    .antwort.richtig { background: #e6f7ee; border-color: var(--gruen); }
-    .antwort.falsch { background: #fde8ed; border-color: var(--akzent); }
+    .antwort.richtig { background: rgba(53, 196, 111, 0.22); border-color: var(--gruen); }
+    .antwort.falsch { background: rgba(214, 43, 43, 0.25); border-color: var(--akzent); }
     .balken { height: 8px; background: var(--rand); border-radius: 99px; overflow: hidden; margin-bottom: 16px; }
     .balken div { height: 100%; background: var(--akzent-2); width: 0; transition: width 0.3s; }
-    .nummer { color: var(--text-leise); font-weight: 600; font-size: 0.9rem; }
+    .nummer { color: var(--akzent); font-family: var(--schrift-schmal); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
   </style>
 </head>
 <body>

@@ -9,14 +9,14 @@
   <style>
     .feld {
       width: 100%; max-width: 420px; margin: 0 auto;
-      border-radius: var(--radius); overflow: hidden; box-shadow: var(--schatten);
+      border-radius: var(--radius); overflow: hidden; border: 3px solid var(--akzent);
       touch-action: none; user-select: none; -webkit-user-select: none;
       background: #cfeebc;
     }
     .feld canvas { display: block; width: 100%; touch-action: none; }
     .feld.autsch { animation: autsch 0.35s; }
     @keyframes autsch { 0%, 100% { box-shadow: var(--schatten); } 40% { box-shadow: 0 0 0 6px var(--akzent); } }
-    .werte { display: flex; justify-content: space-between; font-weight: 600; color: var(--text-leise); margin-bottom: 12px; }
+    .werte { display: flex; justify-content: space-between; font-family: var(--schrift-schmal); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 1.1rem; color: var(--text-leise); margin-bottom: 12px; }
     #meldung { min-height: 1.5em; font-weight: 600; }
   </style>
 </head>

@@ -9,7 +9,7 @@
   <style>
     .brett {
       position: relative; width: min(100%, 360px); aspect-ratio: 1; margin: 0 auto;
-      background: var(--rand); border-radius: var(--radius); padding: 6px;
+      background: var(--karte); border: 3px solid var(--akzent); border-radius: var(--radius); padding: 6px;
       touch-action: manipulation; user-select: none; -webkit-user-select: none;
     }
     .stein {
@@ -19,11 +19,11 @@
     }
     .stein span {
       display: grid; place-items: center; width: 100%; height: 100%;
-      border-radius: 12px; background: #fff; box-shadow: 0 4px 0 #e3c6b2;
-      font-size: clamp(1.8rem, 10vw, 2.6rem); font-weight: 800; color: var(--akzent);
+      border-radius: 10px; background: #f4f4f4; box-shadow: 0 4px 0 #9a9a9a;
+      font-size: clamp(1.8rem, 10vw, 2.6rem); font-family: var(--schrift-titel); font-weight: 900; color: var(--akzent);
     }
-    .stein.passt span { color: var(--gruen); }
-    .werte { text-align: center; font-weight: 600; color: var(--text-leise); margin-bottom: 12px; }
+    .stein.passt span { color: #1f9a52; }
+    .werte { text-align: center; font-family: var(--schrift-schmal); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 1.1rem; color: var(--text-leise); margin-bottom: 12px; }
     .ziel { display: grid; grid-template-columns: repeat(3, 18px); gap: 2px; justify-content: center; margin-top: 8px; font-size: 0.7rem; font-weight: 700; color: var(--text-leise); }
   </style>
 </head>

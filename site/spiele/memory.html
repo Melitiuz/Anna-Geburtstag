@@ -17,10 +17,10 @@
       backface-visibility: hidden; -webkit-backface-visibility: hidden;
       box-shadow: var(--schatten);
     }
-    .kachel .hinten { background: linear-gradient(135deg, var(--akzent), var(--akzent-3)); color: #fff; font-size: 1.6rem; }
-    .kachel .vorne { background: #fff; transform: rotateY(180deg); font-size: clamp(1.8rem, 9vw, 2.6rem); }
-    .kachel.fertig .vorne { background: #e6f7ee; }
-    .werte { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: 600; color: var(--text-leise); }
+    .kachel .hinten { background: linear-gradient(135deg, var(--akzent), var(--akzent-3)); border: 2px solid #ff5a5a; color: #fff; font-family: var(--schrift-titel); font-weight: 900; font-size: 1.6rem; }
+    .kachel .vorne { background: #f4f4f4; transform: rotateY(180deg); font-size: clamp(1.8rem, 9vw, 2.6rem); }
+    .kachel.fertig .vorne { background: #f4f4f4; box-shadow: 0 0 0 3px var(--akzent); }
+    .werte { display: flex; justify-content: space-between; margin-bottom: 12px; font-family: var(--schrift-schmal); font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 1.1rem; color: var(--text-leise); }
   </style>
 </head>
 <body>

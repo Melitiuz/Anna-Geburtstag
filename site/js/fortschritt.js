@@ -31,7 +31,7 @@
   }
 
   function konfetti() {
-    var farben = ["#e8466e", "#f59e2c", "#7c5cff", "#2fae6b", "#3fb5e8"];
+    var farben = ["#d62b2b", "#ffffff", "#f6c544", "#ff6b6b", "#8a1a1a"];
     var box = document.createElement("div");
     box.className = "konfetti";
     for (var i = 0; i < 80; i++) {
@@ -52,17 +52,18 @@
     daten[id] = true;
     speichern(daten);
 
-    var motiv = window.Motive.MOTIVE[spiel(id).motiv];
+    var M = window.Motive, motivId = spiel(id).motiv, motiv = M.MOTIVE[motivId];
     var anzahl = anzahlGewonnen();
     var o = document.createElement("div");
     o.className = "overlay";
     o.innerHTML =
       '<div class="karte">' +
-      "<h2>Geschafft! 🎉</h2>" +
-      "<p>" + (neu ? "Du hast ein neues Motiv freigeschaltet:" : "Dieses Motiv hattest du schon:") + "</p>" +
-      '<div class="motiv-gross">' + motiv.svg + "</div>" +
+      "<h2>Geschafft!</h2>" +
+      "<p>" + (neu ? "Quest gelöst! Neue Figur freigeschaltet:" : "Diese Figur hattest du schon:") + "</p>" +
+      '<div class="motiv-gross">' + motiv.zeichnen(M.loesung(motivId)) + "</div>" +
       "<p><strong>" + motiv.name + "</strong></p>" +
-      '<p class="leise">' + anzahl + " von 4 Motiven gesammelt</p>" +
+      '<p class="hinweis">💡 ' + M.hinweis(motivId) + "</p>" +
+      '<p class="leise">' + anzahl + " von 4 Figuren gesammelt</p>" +
       '<a class="knopf breit" href="' + WURZEL + 'index.html">Zur Übersicht</a>' +
       "</div>";
     document.body.appendChild(o);

@@ -10,19 +10,21 @@
 <body>
   <main class="seite">
     <header class="kopf">
-      <div style="font-size:3rem" aria-hidden="true">🎂</div>
-      <h1>Alles Gute, <span id="name"></span>!</h1>
-      <p class="unterzeile">Dein Geschenk ist gut versteckt. Jedes Spiel schaltet ein Motiv frei. Setze alle vier richtig ins Bild, dann erfährst du, wo es auf dich wartet.</p>
+      <div class="oben">Alles Gute, <span id="name"></span>!</div>
+      <h1>Löse die Quests!</h1>
+      <p class="unterzeile">Dein Geburtstagsgeschenk ist gut versteckt. Jede Quest schaltet eine Figur und einen Hinweis frei. Setze alle vier richtig ins Bild, dann erfährst du, wo es auf dich wartet.</p>
       <div class="fortschritt" id="fortschritt" aria-label="Fortschritt"></div>
     </header>
 
     <section class="spiele" id="spiele"></section>
 
     <section class="karte mitte" style="margin-top:24px">
+      <div class="oben">Finale</div>
       <h2>Dein Bild</h2>
       <p class="leise" id="bild-text"></p>
       <div class="bild" id="bild"></div>
       <div class="ablage" id="ablage"></div>
+      <div class="hinweise" id="hinweise"></div>
       <p style="margin-top:16px"><button class="knopf breit" type="button" id="pruefen" disabled>Bestätigen</button></p>
       <p class="leise" id="pruef-text" aria-live="polite"></p>
     </section>
@@ -43,7 +45,7 @@
       // Fortschrittsanzeige und Spieleliste
       var leiste = document.getElementById("fortschritt");
       var liste = document.getElementById("spiele");
-      F.SPIELE.forEach(function (s) {
+      F.SPIELE.forEach(function (s, i) {
         var ok = F.gewonnen(s.id);
         var punkt = document.createElement("span");
         punkt.textContent = ok ? "✓" : "";
@@ -55,33 +57,42 @@
         a.href = s.datei;
         a.innerHTML =
           '<div class="symbol" aria-hidden="true">' + s.symbol + "</div>" +
-          '<div class="info"><div class="titel">' + s.titel + '</div><div class="status">' +
-          (ok ? "Geschafft, Motiv freigeschaltet" : s.text) + "</div></div>" +
+          '<div class="info"><div class="nummer">Quest ' + (i + 1) + '</div><div class="titel">' + s.titel + '</div><div class="status">' +
+          (ok ? "✓ Geschafft" : s.text) + "</div></div>" +
           '<div class="pfeil" aria-hidden="true">›</div>';
         liste.appendChild(a);
       });
 
-      // Bild mit Zielplätzen
+      // Feld, Ablage und Prüfen
       var bild = document.getElementById("bild");
       var ablage = document.getElementById("ablage");
       var knopf = document.getElementById("pruefen");
       var pruefText = document.getElementById("pruef-text");
       var anzahl = F.anzahlGewonnen();
 
-      document.getElementById("bild-text").textContent = anzahl < 4
-        ? anzahl + " von 4 Motiven freigeschaltet. Ziehe sie mit dem Finger an die passende Stelle im Bild."
-        : "Alle Motive sind da! Ziehe jedes an seinen Platz und tippe dann auf Bestätigen.";
+      document.getElementById("bild-text").textContent = (anzahl < 4
+        ? anzahl + " von 4 Figuren freigeschaltet. "
+        : "Alle Figuren sind da! ") +
+        "Lege jede Figur in das Feld, das die Hinweise verraten. Tippe eine Figur an, um sie zu verändern. Nur wenn Platz und Aussehen aller Figuren zu den Hinweisen passen, ist das Bild richtig.";
 
-      bild.innerHTML = M.SZENE;
-      var plaetze = M.PLAETZE.map(function (p) {
+      // Gesammelte Hinweise
+      var hinweise = document.getElementById("hinweise");
+      hinweise.innerHTML = "<h3>Deine Hinweise</h3>";
+      var hListe = document.createElement("ul");
+      F.SPIELE.forEach(function (s) {
+        var li = document.createElement("li");
+        if (F.gewonnen(s.id)) li.textContent = "💡 " + M.hinweis(s.motiv);
+        else { li.textContent = "🔒 Gewinne " + s.titel + " für diesen Hinweis."; li.className = "gesperrt"; }
+        hListe.appendChild(li);
+      });
+      hinweise.appendChild(hListe);
+
+      // Leeres 2 x 2 Feld, welche Figur wohin gehört, steht nur in den Hinweisen
+      var plaetze = M.FELDER.map(function (name) {
         var d = document.createElement("div");
         d.className = "platz";
-        d.dataset.motiv = p.motiv;
-        d.style.left = ((p.x - p.s / 2) / 400) * 100 + "%";
-        d.style.top = ((p.y - p.s / 2) / 300) * 100 + "%";
-        d.style.width = (p.s / 400) * 100 + "%";
-        d.style.height = (p.s / 300) * 100 + "%";
-        d.innerHTML = '<div class="schatten">' + M.MOTIVE[p.motiv].svg + "</div>";
+        d.dataset.platz = name;
+        d.setAttribute("aria-label", "Feld " + name.replace("-", " "));
         bild.appendChild(d);
         return d;
       });
@@ -95,8 +106,9 @@
           var m = document.createElement("div");
           m.className = "motiv";
           m.dataset.motiv = s.motiv;
+          m.dataset.v = 0;
           m.setAttribute("aria-label", M.MOTIVE[s.motiv].name);
-          m.innerHTML = M.MOTIVE[s.motiv].svg;
+          m.innerHTML = M.MOTIVE[s.motiv].zeichnen(M.MOTIVE[s.motiv].varianten[0]);
           feld.appendChild(m);
         } else {
           feld.classList.add("gesperrt");
@@ -122,6 +134,7 @@
       }
 
       function aktualisieren() {
+        plaetze.forEach(function (p) { p.classList.toggle("belegt", !!belegung(p)); });
         var voll = plaetze.every(belegung);
         knopf.disabled = !voll;
         pruefText.textContent = "";
@@ -138,14 +151,20 @@
         return bester;
       }
 
-      // Ziehen mit Finger oder Maus. Kurzes Antippen wählt ein Motiv aus, danach Tippen auf einen Platz.
-      var zug = null, gewaehlt = null;
-
-      function waehlen(m) {
-        if (gewaehlt) gewaehlt.classList.remove("gewaehlt");
-        gewaehlt = m && m !== gewaehlt ? m : null;
-        if (gewaehlt) gewaehlt.classList.add("gewaehlt");
+      // Kurzes Antippen schaltet zur nächsten Variante der Figur
+      function wechseln(m) {
+        var motiv = M.MOTIVE[m.dataset.motiv];
+        var v = (Number(m.dataset.v) + 1) % motiv.varianten.length;
+        m.dataset.v = v;
+        m.innerHTML = motiv.zeichnen(motiv.varianten[v]);
+        m.classList.remove("tipp");
+        void m.offsetWidth;
+        m.classList.add("tipp");
+        pruefText.textContent = "";
       }
+
+      // Ziehen mit Finger oder Maus
+      var zug = null;
 
       document.addEventListener("pointerdown", function (e) {
         var m = e.target.closest(".motiv");
@@ -160,7 +179,6 @@
         if (!zug.aktiv) {
           if (Math.hypot(e.clientX - zug.x, e.clientY - zug.y) < 6) return;
           zug.aktiv = true;
-          waehlen(null);
           zug.geist = document.createElement("div");
           zug.geist.className = "schwebt";
           zug.geist.style.width = zug.geist.style.height = zug.groesse + "px";
@@ -179,7 +197,7 @@
         var z = zug;
         zug = null;
         plaetze.forEach(function (p) { p.classList.remove("ziel-aktiv"); });
-        if (!z.aktiv) { waehlen(z.m); return; }
+        if (!z.aktiv) { if (e.type === "pointerup") wechseln(z.m); return; }
         z.geist.remove();
         z.m.classList.remove("zieht");
         var ziel = e.type === "pointerup" ? platzUnter(e.clientX, e.clientY) : null;
@@ -190,31 +208,17 @@
       document.addEventListener("pointerup", zugEnde);
       document.addEventListener("pointercancel", zugEnde);
 
-      // Antippen eines Platzes oder der Ablage, wenn ein Motiv ausgewählt ist
-      bild.addEventListener("click", function (e) {
-        if (!gewaehlt || e.target.closest(".motiv")) return;
-        var p = e.target.closest(".platz") || platzUnter(e.clientX, e.clientY);
-        if (!p) return;
-        setzen(gewaehlt, p);
-        waehlen(null);
-        aktualisieren();
-      });
-      ablage.addEventListener("click", function (e) {
-        if (!gewaehlt || e.target.closest(".motiv")) return;
-        zurueck(gewaehlt);
-        waehlen(null);
-        aktualisieren();
-      });
-
       knopf.addEventListener("click", function () {
         var falsche = plaetze.filter(function (p) {
           var m = belegung(p);
-          return !m || m.dataset.motiv !== p.dataset.motiv;
+          if (!m || M.platz(m.dataset.motiv) !== p.dataset.platz) return true;
+          var motiv = M.MOTIVE[m.dataset.motiv];
+          return motiv.varianten[Number(m.dataset.v)] !== M.loesung(m.dataset.motiv);
         });
         if (falsche.length) {
           pruefText.textContent = falsche.length === 1
-            ? "Fast! Ein Motiv steht noch an der falschen Stelle."
-            : "Noch nicht ganz. " + falsche.length + " Motive stehen an der falschen Stelle.";
+            ? "Fast! Eine Figur passt noch nicht. Prüfe Platz und Hinweise."
+            : "Noch nicht ganz. " + falsche.length + " Figuren passen noch nicht. Prüfe Plätze und Hinweise.";
           falsche.forEach(function (p) {
             p.classList.remove("falsch");
             void p.offsetWidth;
