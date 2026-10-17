@@ -32,9 +32,12 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
     silvia als .jpg, von Wikimedia Commons). Fehlt ein Foto, wird die Frage automatisch weggelassen.
     Quellenangabe je Foto steht in config.js (quelle) und erscheint unter dem Foto sowie auf site/bildnachweis.html
     (verlinkt im Fuß der Startseite). Neue Fotos nur mit freier Lizenz und mit Quellenangabe einbinden.
-  - Brückenritt (Geschicklichkeit): Seitwärts-Laufspiel, der Ritter reitet automatisch, Tippen = springen. 30 Hölzer am
-    Boden und in der Luft, Steine und Dornenbüsche kosten 3 Hölzer. Am Ende ein Burggraben: mindestens 20 Hölzer (2/3)
-    ergeben die Brücke zur Burg, sonst neuer Versuch. Holz und Hindernisse bei jedem Versuch neu verteilt, Tempo steigt leicht
+  - Brückenritt (Geschicklichkeit): Seitwärts-Laufspiel, der Ritter reitet automatisch. Kurz tippen = kleiner Sprung,
+    gedrückt halten = hoher Sprung. Hindernisse: Steine, Doppelsteine, entgegenlaufende Wölfe, hohe Hecken (nur hoher
+    Sprung), tief hängende Äste (nicht springen). 30 Hölzer am Boden, niedrig, hoch, in Bögen, über Hecken und unter Ästen.
+    Jeder Zusammenstoß kostet 3 Hölzer. Am Ende ein Burggraben: mindestens 20 Hölzer (2/3) ergeben die Brücke zur Burg.
+    Strecke aus zufälligen Mustern, Tempo steigt von 190 auf 300. Mit ?test in der Adresse gibt es einen Testzugang
+    (window.spielTest) für automatische Durchläufe
 - `site/js/config.js` : Name der beschenkten Person, Nachricht im Popup (Text, Link, Gruß), Lösung (Platz und Variante je Figur) und Quizfragen
 - `site/js/motive.js` : die vier Figuren mit ihren Varianten als SVG, Hinweistexte und die Felder des 2 x 2 Rasters
 - `site/js/fortschritt.js` : Speichern des Fortschritts, Zuordnung Spiel zu Motiv, Gewinn-Overlay, Konfetti

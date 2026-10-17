@@ -16,6 +16,8 @@
     .buehne canvas { display: block; width: 100%; touch-action: none; }
     #meldung { min-height: 1.5em; font-weight: 600; text-align: center; margin-top: 12px; }
     .steuerung { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 12px; }
+    .legende { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 12px; font-size: 0.88rem; color: var(--text-leise); margin-bottom: 14px; }
+    .legende b { color: var(--text); }
   </style>
 </head>
 <body>
@@ -23,8 +25,14 @@
     <a class="zurueck" href="../index.html">‹ Übersicht</a>
     <header class="kopf">
       <h1>🪵 Brückenritt</h1>
-      <p class="unterzeile">Der Ritter reitet zur Burg, doch davor liegt ein Burggraben. Sammle unterwegs Holz für eine Brücke. Tippe auf das Spielfeld, um zu springen. Wer gegen Steine oder Dornenbüsche reitet, verliert Holz. Für die Brücke brauchst du mindestens <b id="t-noetig">20</b> von <b id="t-gesamt">30</b> Hölzern.</p>
+      <p class="unterzeile">Der Ritter jagt zur Burg, doch davor liegt ein Burggraben. Sammle unterwegs Holz für die Brücke. Jeder Zusammenstoß kostet <b id="t-verlust">3</b> Hölzer. Für die Brücke brauchst du mindestens <b id="t-noetig">20</b> von <b id="t-gesamt">30</b> Hölzern.</p>
     </header>
+    <div class="legende">
+      <span><b>Kurz tippen:</b> kleiner Sprung</span>
+      <span><b>Gedrückt halten:</b> hoher Sprung</span>
+      <span><b>Hohe Hecke:</b> nur hoch drüber</span>
+      <span><b>Tiefer Ast:</b> nicht springen!</span>
+    </div>
     <div class="buehne" id="buehne"><canvas id="leinwand"></canvas></div>
     <p id="meldung" aria-live="polite"></p>
     <div class="steuerung"><button class="knopf" type="button" id="aktion">Losreiten</button></div>
@@ -36,9 +44,11 @@
   <script>
     (function () {
       // Virtuelles Spielfeld, wird auf die Bildschirmbreite skaliert
-      var W = 400, H = 225, BODEN = 190, RX = 70;
+      var W = 400, H = 225, BODEN = 190, RX = 70, GRABEN_SCHIRM = 190;
       var HOLZ_GESAMT = 30, HOLZ_NOETIG = Math.ceil(HOLZ_GESAMT * 2 / 3), VERLUST = 3;
-      var GRAVITATION = 1500, SPRUNG = -560;
+      var GRAVITATION = 1700, SPRUNG = -650, ABBRUCH = 0.35;   // Loslassen bremst den Aufstieg: kurzer Tipp = kleiner Sprung
+      var TEMPO_START = 190, TEMPO_ENDE = 300;
+      var AST_UNTEN = BODEN - 46, HOLZ_BODEN = BODEN - 16, HOLZ_NIEDRIG = BODEN - 50, HOLZ_HOCH = BODEN - 95;
 
       var buehne = document.getElementById("buehne");
       var leinwand = document.getElementById("leinwand");
@@ -47,6 +57,7 @@
       var knopf = document.getElementById("aktion");
       document.getElementById("t-noetig").textContent = HOLZ_NOETIG;
       document.getElementById("t-gesamt").textContent = HOLZ_GESAMT;
+      document.getElementById("t-verlust").textContent = VERLUST;
 
       function bildAus(svg) {
         var img = new Image();
@@ -56,7 +67,8 @@
       var ritterBild = bildAus(Motive.MOTIVE.ritter.zeichnen("rechts"));
       var burgBild = bildAus(Motive.MOTIVE.burg.zeichnen(2));
 
-      var skala = 1, phase, welt, kamera, reiter, holz, unverwundbar, teile, grabenX, bauFortschritt, zeitImZiel, letzteZeit;
+      var skala = 1, phase, welt, kamera, reiter, holz, unverwundbar, teile, texte, staub, wackeln,
+          grabenX, bauFortschritt, letzteZeit, gedrueckt, sprungPuffer;
 
       function vermessen() {
         var dpr = window.devicePixelRatio || 1;
@@ -68,43 +80,59 @@
         g.setTransform(dpr * skala, 0, 0, dpr * skala, 0, 0);
       }
 
-      function mischen(a) {
-        for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
-        return a;
+      function zufall(a, b) { return a + Math.random() * (b - a); }
+      function tempoBei(x) { return TEMPO_START + (TEMPO_ENDE - TEMPO_START) * Math.min(1, x / grabenX); }
+
+      // ---------- Strecke aus Mustern ----------
+      // Jedes Muster legt Hindernisse und Hölzer ab und gibt zurück, wie viel Holz und Platz es belegt.
+      var MUSTER = {
+        stein: function (x, l) { l.push({ art: "stein", x: x, w: 30, h: 24 }); return { holz: 0, breite: 30 }; },
+        steinMitHolz: function (x, l) { l.push({ art: "stein", x: x, w: 30, h: 24 }); l.push({ art: "holz", x: x + 2, y: HOLZ_NIEDRIG }); return { holz: 1, breite: 30 }; },
+        doppelstein: function (x, l) { l.push({ art: "stein", x: x, w: 26, h: 22 }); l.push({ art: "stein", x: x + 60, w: 26, h: 22 }); return { holz: 0, breite: 86 }; },
+        wolf: function (x, l) { l.push({ art: "wolf", x: x + 120, w: 36, h: 22, vx: -90 }); return { holz: 0, breite: 40 }; },
+        hecke: function (x, l) { l.push({ art: "hecke", x: x, w: 34, h: 80 }); return { holz: 0, breite: 34 }; },
+        heckeMitHolz: function (x, l) { l.push({ art: "hecke", x: x, w: 34, h: 80 }); l.push({ art: "holz", x: x + 4, y: HOLZ_HOCH }); return { holz: 1, breite: 34 }; },
+        ast: function (x, l) { l.push({ art: "ast", x: x, w: 70 }); l.push({ art: "holz", x: x + 22, y: HOLZ_BODEN }); return { holz: 1, breite: 70 }; },
+        holzBoden: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_BODEN }); l.push({ art: "holz", x: x + 46, y: HOLZ_BODEN }); return { holz: 2, breite: 72 }; },
+        holzNiedrig: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_NIEDRIG }); return { holz: 1, breite: 26 }; },
+        holzHoch: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_HOCH }); return { holz: 1, breite: 26 }; },
+        holzBogen: function (x, l) {
+          l.push({ art: "holz", x: x, y: BODEN - 38 }); l.push({ art: "holz", x: x + 40, y: BODEN - 58 }); l.push({ art: "holz", x: x + 80, y: BODEN - 38 });
+          return { holz: 3, breite: 106 };
+        }
+      };
+      var GEWICHTE = { stein: 3, steinMitHolz: 3, doppelstein: 2, wolf: 3, hecke: 2, heckeMitHolz: 3, ast: 3, holzBoden: 2, holzNiedrig: 2, holzHoch: 2, holzBogen: 2 };
+
+      function probeHolz(name) { return MUSTER[name](0, []).holz; }
+      function musterWaehlen(rest) {
+        var namen = Object.keys(GEWICHTE).filter(function (n) { return probeHolz(n) <= rest; });
+        var summe = namen.reduce(function (s, n) { return s + GEWICHTE[n]; }, 0), z = Math.random() * summe;
+        for (var i = 0; i < namen.length; i++) { z -= GEWICHTE[namen[i]]; if (z <= 0) return namen[i]; }
+        return namen[namen.length - 1];
       }
 
-      // Strecke: 30 Hölzer (am Boden oder in der Luft) und Hindernisse, bei jedem Versuch neu verteilt
       function streckeBauen() {
-        var ereignisse = [];
-        var hindernisse = 16, ueberHindernis = 6;
-        for (var i = 0; i < hindernisse; i++) ereignisse.push({ hindernis: true, mitHolz: i < ueberHindernis });
-        var frei = HOLZ_GESAMT - ueberHindernis;
-        for (i = 0; i < frei; i++) ereignisse.push({ hindernis: false, luft: Math.random() < 0.55 });
-        mischen(ereignisse);
-        var x = 420, liste = [];
-        ereignisse.forEach(function (e) {
-          if (e.hindernis) {
-            var stein = Math.random() < 0.5;
-            liste.push({ art: stein ? "stein" : "busch", x: x, w: stein ? 30 : 36, h: stein ? 24 : 28 });
-            if (e.mitHolz) liste.push({ art: "holz", x: x + 3, y: BODEN - 92 });
-          } else {
-            liste.push({ art: "holz", x: x, y: e.luft ? BODEN - 78 : BODEN - 16 });
-          }
-          x += 190 + Math.random() * 120;
-        });
-        grabenX = x + 260;
+        var liste = [], x = 380, holzZahl = 0, letztes = "";
+        grabenX = 9000; // vorläufig, damit tempoBei während des Bauens rechnen kann
+        while (holzZahl < HOLZ_GESAMT) {
+          var name = musterWaehlen(HOLZ_GESAMT - holzZahl);
+          if (name === letztes && Math.random() < 0.7) name = musterWaehlen(HOLZ_GESAMT - holzZahl);
+          var e = MUSTER[name](x, liste);
+          holzZahl += e.holz;
+          letztes = name;
+          // Abstand zum nächsten Muster: genug Zeit für einen hohen Sprung plus Reaktion, bei hohem Tempo enger getaktet
+          x += e.breite + tempoBei(x) * zufall(0.8, 1.15);
+        }
+        grabenX = x + 220;
         return liste;
       }
 
       function neu() {
         welt = streckeBauen();
         kamera = 0;
-        reiter = { y: BODEN, vy: 0, amBoden: true, x: RX };
-        holz = 0;
-        unverwundbar = 0;
-        teile = [];
-        bauFortschritt = 0;
-        zeitImZiel = 0;
+        reiter = { y: BODEN, vy: 0, amBoden: true, x: RX, gebremst: false };
+        holz = 0; unverwundbar = 0; teile = []; texte = []; staub = []; wackeln = 0;
+        bauFortschritt = 0; gedrueckt = false; sprungPuffer = 0;
         phase = "bereit";
         meldung.textContent = "";
         knopf.textContent = "Losreiten";
@@ -112,24 +140,44 @@
         zeichnen();
       }
 
-      function tempo() { return 150 + 70 * Math.min(1, kamera / grabenX); }
+      // ---------- Steuerung ----------
+      function absprung() { reiter.vy = SPRUNG; reiter.amBoden = false; reiter.gebremst = false; sprungPuffer = 0; }
 
-      function springen() {
+      function druecken() {
+        gedrueckt = true;
         if (phase === "bereit") { phase = "laeuft"; knopf.hidden = true; letzteZeit = performance.now(); requestAnimationFrame(schleife); return; }
-        if (phase === "laeuft" && reiter.amBoden) { reiter.vy = SPRUNG; reiter.amBoden = false; }
+        if (phase !== "laeuft") return;
+        if (reiter.amBoden) absprung();
+        else sprungPuffer = 0.12; // kurz vor der Landung gedrückt: springt sofort nach dem Aufsetzen
+      }
+      function loslassen() {
+        gedrueckt = false;
+        if (!reiter.amBoden && reiter.vy < 0 && !reiter.gebremst) { reiter.vy *= ABBRUCH; reiter.gebremst = true; }
       }
 
-      buehne.addEventListener("pointerdown", function (e) { e.preventDefault(); springen(); });
+      buehne.addEventListener("pointerdown", function (e) { e.preventDefault(); druecken(); });
+      window.addEventListener("pointerup", loslassen);
+      window.addEventListener("pointercancel", loslassen);
       document.addEventListener("keydown", function (e) {
-        if (e.code === "Space" || e.code === "ArrowUp") { e.preventDefault(); springen(); }
+        if ((e.code === "Space" || e.code === "ArrowUp") && !e.repeat) { e.preventDefault(); druecken(); }
+      });
+      document.addEventListener("keyup", function (e) {
+        if (e.code === "Space" || e.code === "ArrowUp") { e.preventDefault(); loslassen(); }
       });
       knopf.addEventListener("click", function () {
         if (phase === "gescheitert") neu();
-        springen();
+        druecken();
+        loslassen();
       });
 
-      function trefferbox() { return { l: reiter.x + 12, r: reiter.x + 42, o: reiter.y - 40, u: reiter.y }; }
+      // ---------- Spiellogik ----------
+      function trefferbox() { return { l: reiter.x + 15, r: reiter.x + 39, o: reiter.y - 40, u: reiter.y }; }
       function ueberlappt(a, b) { return a.l < b.r && a.r > b.l && a.o < b.u && a.u > b.o; }
+      function box(e, sx) {
+        if (e.art === "holz") return { l: sx, r: sx + 26, o: e.y - 8, u: e.y + 8 };
+        if (e.art === "ast") return { l: sx + 4, r: sx + e.w - 4, o: 0, u: AST_UNTEN };
+        return { l: sx + 4, r: sx + e.w - 4, o: BODEN - e.h + 4, u: BODEN };
+      }
 
       function schleife(jetzt) {
         var dt = Math.min(0.04, (jetzt - letzteZeit) / 1000);
@@ -139,44 +187,65 @@
         if (phase !== "fertig" && phase !== "gescheitert" && phase !== "bereit") requestAnimationFrame(schleife);
       }
 
+      function getroffen() {
+        var verlust = Math.min(VERLUST, holz);
+        holz -= verlust;
+        unverwundbar = 1.1;
+        wackeln = 0.35;
+        for (var i = 0; i < verlust; i++) teile.push({ x: reiter.x + 26, y: reiter.y - 30, vx: -60 - Math.random() * 140, vy: -260 - Math.random() * 160, leben: 1.1 });
+        texte.push({ x: reiter.x + 20, y: reiter.y - 64, text: verlust ? "-" + verlust : "Autsch!", farbe: "#ff6b6b", leben: 0.9 });
+        if (navigator.vibrate) navigator.vibrate(90);
+      }
+
       function aktualisieren(dt) {
-        // Sprungphysik
         if (!reiter.amBoden) {
           reiter.vy += GRAVITATION * dt;
           reiter.y += reiter.vy * dt;
-          if (reiter.y >= BODEN) { reiter.y = BODEN; reiter.vy = 0; reiter.amBoden = true; }
+          if (reiter.y >= BODEN) {
+            reiter.y = BODEN; reiter.vy = 0; reiter.amBoden = true;
+            if (sprungPuffer > 0 && phase === "laeuft") { absprung(); if (!gedrueckt) loslassen(); }
+          }
         }
+        if (sprungPuffer > 0) sprungPuffer -= dt;
         if (unverwundbar > 0) unverwundbar -= dt;
+        if (wackeln > 0) wackeln -= dt;
         teile.forEach(function (t) { t.vy += GRAVITATION * 0.6 * dt; t.x += t.vx * dt; t.y += t.vy * dt; t.leben -= dt; });
         teile = teile.filter(function (t) { return t.leben > 0; });
+        texte.forEach(function (t) { t.y -= 40 * dt; t.leben -= dt; });
+        texte = texte.filter(function (t) { return t.leben > 0; });
+        staub.forEach(function (s) { s.x -= s.vx * dt; s.y -= 12 * dt; s.leben -= dt; });
+        staub = staub.filter(function (s) { return s.leben > 0; });
 
         if (phase === "laeuft") {
-          kamera += tempo() * dt;
-          var box = trefferbox();
+          var v = tempoBei(kamera);
+          kamera += v * dt;
+          if (reiter.amBoden && Math.random() < 0.5) staub.push({ x: reiter.x + 8, y: BODEN - 2, vx: v * 0.3, leben: 0.4, r: zufall(1.5, 3) });
+          var b = trefferbox();
           welt.forEach(function (e) {
             if (e.weg) return;
             var sx = e.x - kamera;
+            // Wölfe laufen erst los, wenn sie ins Bild kommen
+            if (e.vx && sx < W + 40) { e.x += e.vx * dt; sx = e.x - kamera; }
+            if (sx > W || sx < -80) return;
             if (e.art === "holz") {
-              if (ueberlappt(box, { l: sx, r: sx + 26, o: e.y - 8, u: e.y + 8 })) { e.weg = true; holz++; }
-            } else if (unverwundbar <= 0 && ueberlappt(box, { l: sx + 4, r: sx + e.w - 4, o: BODEN - e.h + 4, u: BODEN })) {
-              var verlust = Math.min(VERLUST, holz);
-              holz -= verlust;
-              unverwundbar = 1.2;
-              for (var i = 0; i < verlust; i++) teile.push({ x: reiter.x + 26, y: reiter.y - 30, vx: -80 - Math.random() * 120, vy: -250 - Math.random() * 150, leben: 1.2 });
-              meldung.textContent = verlust ? "Autsch! " + verlust + (verlust === 1 ? " Holz verloren." : " Hölzer verloren.") : "Autsch! Zum Glück hattest du noch kein Holz.";
+              if (ueberlappt(b, box(e, sx))) {
+                e.weg = true; holz++;
+                texte.push({ x: sx, y: e.y - 12, text: "+1", farbe: "#ffe27a", leben: 0.7 });
+              }
+            } else if (unverwundbar <= 0 && ueberlappt(b, box(e, sx))) {
+              getroffen();
             }
           });
-          // Am Graben anhalten: der Graben steht dann bei Bildschirm-x 190
-          if (kamera >= grabenX - 190) {
-            kamera = grabenX - 190;
+          if (kamera >= grabenX - GRABEN_SCHIRM) {
+            kamera = grabenX - GRABEN_SCHIRM;
             if (reiter.amBoden) { phase = "ankunft"; meldung.textContent = "Der Burggraben! Jetzt wird gebaut."; }
           }
         } else if (phase === "ankunft") {
-          reiter.x = Math.min(reiter.x + 90 * dt, 136);
-          if (reiter.x >= 136) phase = "bauen";
+          reiter.x = Math.min(reiter.x + 90 * dt, GRABEN_SCHIRM - 54);
+          if (reiter.x >= GRABEN_SCHIRM - 54) phase = "bauen";
         } else if (phase === "bauen") {
           var ziel = Math.min(holz, HOLZ_NOETIG);
-          bauFortschritt = Math.min(ziel, bauFortschritt + dt * 12);
+          bauFortschritt = Math.min(ziel, bauFortschritt + dt * 14);
           if (bauFortschritt >= ziel) {
             if (holz >= HOLZ_NOETIG) { phase = "ueberqueren"; meldung.textContent = "Die Brücke steht!"; }
             else {
@@ -188,7 +257,7 @@
           }
         } else if (phase === "ueberqueren") {
           reiter.x += 90 * dt;
-          if (reiter.x >= 270) {
+          if (reiter.x >= GRABEN_SCHIRM + 80) {
             phase = "fertig";
             meldung.textContent = "Der Ritter hat die Burg erreicht!";
             setTimeout(function () { Fortschritt.gewinnen("brueckenritt"); }, 500);
@@ -198,117 +267,151 @@
 
       // ---------- Zeichnen ----------
       function holzZeichnen(x, y) {
-        g.fillStyle = "#8a5a2b";
-        g.fillRect(x, y - 6, 24, 12);
-        g.fillStyle = "#6e4420";
-        g.fillRect(x + 4, y - 3, 14, 2);
-        g.fillStyle = "#d9a86c";
-        g.beginPath(); g.ellipse(x + 24, y, 4, 6, 0, 0, Math.PI * 2); g.fill();
-        g.strokeStyle = "#8a5a2b"; g.lineWidth = 1;
-        g.beginPath(); g.ellipse(x + 24, y, 2, 3, 0, 0, Math.PI * 2); g.stroke();
+        g.fillStyle = "#8a5a2b"; g.fillRect(x, y - 6, 24, 12);
+        g.fillStyle = "#6e4420"; g.fillRect(x + 4, y - 3, 14, 2);
+        g.fillStyle = "#d9a86c"; g.beginPath(); g.ellipse(x + 24, y, 4, 6, 0, 0, Math.PI * 2); g.fill();
+        g.strokeStyle = "#8a5a2b"; g.lineWidth = 1; g.beginPath(); g.ellipse(x + 24, y, 2, 3, 0, 0, Math.PI * 2); g.stroke();
       }
 
-      function hindernisZeichnen(e, sx) {
-        if (e.art === "stein") {
-          g.fillStyle = "#8d8f99";
-          g.beginPath();
-          g.moveTo(sx, BODEN); g.lineTo(sx + 5, BODEN - e.h + 6); g.lineTo(sx + 14, BODEN - e.h); g.lineTo(sx + 26, BODEN - e.h + 8); g.lineTo(sx + e.w, BODEN);
-          g.closePath(); g.fill();
-          g.fillStyle = "#b3b6c2";
-          g.beginPath(); g.moveTo(sx + 8, BODEN - e.h + 8); g.lineTo(sx + 14, BODEN - e.h + 3); g.lineTo(sx + 18, BODEN - e.h + 10); g.closePath(); g.fill();
-        } else {
-          g.fillStyle = "#2f6b33";
-          [[10, 14, 11], [22, 10, 12], [28, 18, 9], [16, 20, 10]].forEach(function (k) {
-            g.beginPath(); g.arc(sx + k[0], BODEN - k[1], k[2], 0, Math.PI * 2); g.fill();
-          });
-          g.strokeStyle = "#d9c27a"; g.lineWidth = 1.2;
-          for (var i = 0; i < 7; i++) {
-            var a = sx + 4 + i * 5, b = BODEN - 10 - (i % 3) * 7;
-            g.beginPath(); g.moveTo(a, b); g.lineTo(a - 3, b - 4); g.stroke();
-          }
-        }
+      function steinZeichnen(e, sx) {
+        g.fillStyle = "#8d8f99";
+        g.beginPath();
+        g.moveTo(sx, BODEN); g.lineTo(sx + 5, BODEN - e.h + 6); g.lineTo(sx + e.w * 0.45, BODEN - e.h); g.lineTo(sx + e.w * 0.85, BODEN - e.h + 8); g.lineTo(sx + e.w, BODEN);
+        g.closePath(); g.fill();
+        g.fillStyle = "#b3b6c2";
+        g.beginPath(); g.moveTo(sx + 8, BODEN - e.h + 8); g.lineTo(sx + e.w * 0.45, BODEN - e.h + 3); g.lineTo(sx + e.w * 0.6, BODEN - e.h + 10); g.closePath(); g.fill();
+      }
+
+      function heckeZeichnen(e, sx) {
+        g.fillStyle = "#24572a";
+        g.fillRect(sx, BODEN - e.h + 6, e.w, e.h - 6);
+        g.fillStyle = "#2f7d3a";
+        for (var i = 0; i < 8; i++) { g.beginPath(); g.arc(sx + 8 + (i % 2) * 18, BODEN - e.h + 9 + Math.floor(i / 2) * 16, 9, 0, Math.PI * 2); g.fill(); }
+        g.fillStyle = "#d62b2b";
+        [[10, 14], [24, 30], [12, 44], [26, 54]].forEach(function (p) { g.beginPath(); g.arc(sx + p[0], BODEN - e.h + p[1], 2, 0, Math.PI * 2); g.fill(); });
+      }
+
+      function astZeichnen(e, sx) {
+        g.strokeStyle = "#6a3f25"; g.lineWidth = 7; g.lineCap = "round";
+        g.beginPath(); g.moveTo(sx - 10, 0); g.quadraticCurveTo(sx + 10, AST_UNTEN - 30, sx + e.w, AST_UNTEN - 6); g.stroke();
+        g.fillStyle = "#3f9e4d";
+        [[15, -26], [35, -16], [55, -8], [28, -4], [48, 2], [8, -10]].forEach(function (p) {
+          g.beginPath(); g.ellipse(sx + p[0], AST_UNTEN + p[1] - 4, 11, 7, 0.4, 0, Math.PI * 2); g.fill();
+        });
+      }
+
+      function wolfZeichnen(e, sx) {
+        var lauf = Math.sin((e.x + kamera) / 9) * 3;
+        g.fillStyle = "#6b6e78";
+        g.beginPath(); g.ellipse(sx + 20, BODEN - 13, 15, 7, 0, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.ellipse(sx + 4, BODEN - 18, 7, 5, -0.3, 0, Math.PI * 2); g.fill();
+        g.beginPath(); g.moveTo(sx + 2, BODEN - 18); g.lineTo(sx - 8, BODEN - 13); g.lineTo(sx + 4, BODEN - 12); g.closePath(); g.fill();
+        g.beginPath(); g.moveTo(sx + 2, BODEN - 22); g.lineTo(sx + 5, BODEN - 30); g.lineTo(sx + 9, BODEN - 21); g.closePath(); g.fill();
+        g.beginPath(); g.moveTo(sx + 33, BODEN - 16); g.lineTo(sx + 43, BODEN - 23); g.lineTo(sx + 35, BODEN - 11); g.closePath(); g.fill();
+        g.fillRect(sx + 9 + lauf, BODEN - 8, 3, 8); g.fillRect(sx + 27 - lauf, BODEN - 8, 3, 8);
+        g.fillStyle = "#ffe27a"; g.fillRect(sx + 1, BODEN - 20, 2, 2);
       }
 
       function zeichnen() {
-        // Himmel und Hügel
+        g.save();
+        if (wackeln > 0) g.translate(zufall(-3, 3), zufall(-3, 3));
+        var v = phase === "laeuft" ? tempoBei(kamera) : 0;
+
         var himmel = g.createLinearGradient(0, 0, 0, BODEN);
         himmel.addColorStop(0, "#7cc8ff"); himmel.addColorStop(1, "#d6f0ff");
-        g.fillStyle = himmel; g.fillRect(0, 0, W, H);
+        g.fillStyle = himmel; g.fillRect(-5, -5, W + 10, H + 10);
         g.fillStyle = "#ffe27a"; g.beginPath(); g.arc(350, 36, 18, 0, Math.PI * 2); g.fill();
+        // Hügel und Bäume im Hintergrund bewegen sich langsamer: Tiefenwirkung
         g.fillStyle = "#a9dc8f";
         g.beginPath(); g.moveTo(0, BODEN);
         for (var x = 0; x <= W; x += 10) g.lineTo(x, BODEN - 40 - 18 * Math.sin((x + kamera * 0.3) / 60));
         g.lineTo(W, BODEN); g.closePath(); g.fill();
+        for (var t = 0; t < 6; t++) {
+          var tx = ((t * 97 - kamera * 0.55) % 480 + 480) % 480 - 40;
+          g.fillStyle = "#6a3f25"; g.fillRect(tx + 8, BODEN - 34, 5, 34);
+          g.fillStyle = "#4fae5a"; g.beginPath(); g.arc(tx + 10, BODEN - 42, 14, 0, Math.PI * 2); g.fill();
+        }
 
         // Boden
-        g.fillStyle = "#8b6b3e"; g.fillRect(0, BODEN, W, H - BODEN);
-        g.fillStyle = "#5cb85c"; g.fillRect(0, BODEN, W, 7);
+        g.fillStyle = "#8b6b3e"; g.fillRect(-5, BODEN, W + 10, H - BODEN + 5);
+        g.fillStyle = "#5cb85c"; g.fillRect(-5, BODEN, W + 10, 7);
         g.fillStyle = "#7a5c33";
         for (var i = 0; i < 12; i++) { var bx = i * 40 - (kamera % 40); g.fillRect(bx, BODEN + 14, 18, 3); g.fillRect(bx + 20, BODEN + 24, 12, 3); }
 
-        // Burggraben, Brücke und Burg am Ende der Strecke
-        var gx = grabenX - kamera;
-        if (gx < W + 200) {
-          g.fillStyle = "#3b7fc4"; g.fillRect(gx, BODEN, 80, H - BODEN);
-          g.fillStyle = "#5aa2e6"; g.fillRect(gx, BODEN + 4, 80, 3);
-          g.fillStyle = "#8b6b3e"; g.fillRect(gx + 80, BODEN, W, H - BODEN);
-          g.fillStyle = "#5cb85c"; g.fillRect(gx + 80, BODEN, W, 7);
-          if (burgBild.complete) g.drawImage(burgBild, gx + 70, BODEN - 120, 130, 130);
-          // Brückenbretter: jedes Holz ist ein Brett
-          var bretter = Math.floor(bauFortschritt);
-          var breite = 80 / HOLZ_NOETIG;
-          for (var b = 0; b < bretter; b++) {
-            g.fillStyle = b % 2 ? "#8a5a2b" : "#9c6a35";
-            g.fillRect(gx + b * breite, BODEN - 2, breite - 0.5, 8);
+        // Fahrtwind bei hohem Tempo
+        if (v > 230) {
+          g.strokeStyle = "rgba(255,255,255," + ((v - 230) / 140).toFixed(2) + ")"; g.lineWidth = 1.5;
+          for (var s = 0; s < 6; s++) {
+            var sy = 40 + ((s * 53) % 130), sxl = ((s * 131 - kamera * 1.6) % 460 + 460) % 460 - 30;
+            g.beginPath(); g.moveTo(sxl, sy); g.lineTo(sxl + 26, sy); g.stroke();
           }
         }
 
-        // Holz und Hindernisse
+        // Burggraben, Brücke und Burg am Ende
+        var gx = grabenX - kamera;
+        if (gx < W + 200) {
+          g.fillStyle = "#3b7fc4"; g.fillRect(gx, BODEN, 80, H - BODEN + 5);
+          g.fillStyle = "#5aa2e6"; g.fillRect(gx, BODEN + 4, 80, 3);
+          g.fillStyle = "#8b6b3e"; g.fillRect(gx + 80, BODEN, W, H - BODEN + 5);
+          g.fillStyle = "#5cb85c"; g.fillRect(gx + 80, BODEN, W, 7);
+          if (burgBild.complete) g.drawImage(burgBild, gx + 70, BODEN - 120, 130, 130);
+          var bretter = Math.floor(bauFortschritt), breite = 80 / HOLZ_NOETIG;
+          for (var b = 0; b < bretter; b++) { g.fillStyle = b % 2 ? "#8a5a2b" : "#9c6a35"; g.fillRect(gx + b * breite, BODEN - 2, breite - 0.5, 8); }
+        }
+
+        // Hindernisse und Holz
         welt.forEach(function (e) {
           if (e.weg) return;
           var sx = e.x - kamera;
-          if (sx < -50 || sx > W + 50) return;
+          if (sx < -90 || sx > W + 60) return;
           if (e.art === "holz") holzZeichnen(sx, e.y);
-          else hindernisZeichnen(e, sx);
+          else if (e.art === "stein") steinZeichnen(e, sx);
+          else if (e.art === "hecke") heckeZeichnen(e, sx);
+          else if (e.art === "ast") astZeichnen(e, sx);
+          else if (e.art === "wolf") wolfZeichnen(e, sx);
         });
 
-        // Verlorenes Holz fliegt davon
-        teile.forEach(function (t) { g.globalAlpha = Math.max(0, t.leben); holzZeichnen(t.x, t.y); g.globalAlpha = 1; });
+        // Staub und verlorenes Holz
+        staub.forEach(function (s) { g.fillStyle = "rgba(139,107,62," + Math.min(1, s.leben * 2).toFixed(2) + ")"; g.beginPath(); g.arc(s.x, s.y, s.r, 0, Math.PI * 2); g.fill(); });
+        teile.forEach(function (t) { g.globalAlpha = Math.max(0, Math.min(1, t.leben)); holzZeichnen(t.x, t.y); g.globalAlpha = 1; });
 
         // Reiter (blinkt nach einem Treffer)
-        if (!(unverwundbar > 0 && Math.floor(unverwundbar * 10) % 2 === 0) && ritterBild.complete) {
-          var huepf = reiter.amBoden && (phase === "laeuft" || phase === "ankunft" || phase === "ueberqueren") ? Math.abs(Math.sin(kamera / 14 + reiter.x / 14)) * 2 : 0;
+        if (!(unverwundbar > 0 && Math.floor(unverwundbar * 12) % 2 === 0) && ritterBild.complete) {
+          var huepf = reiter.amBoden && (phase === "laeuft" || phase === "ankunft" || phase === "ueberqueren") ? Math.abs(Math.sin(kamera / 12 + reiter.x / 14)) * 2.5 : 0;
           g.drawImage(ritterBild, reiter.x - 4, reiter.y - 58 - huepf, 62, 62);
         }
 
+        g.font = "bold 14px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
+        texte.forEach(function (t) { g.globalAlpha = Math.min(1, t.leben * 2); g.fillStyle = t.farbe; g.fillText(t.text, t.x + 12, t.y); g.globalAlpha = 1; });
+        g.textAlign = "left";
+
         // Anzeige oben: Holz und Strecke
-        g.fillStyle = "rgba(0,0,0,0.55)";
-        g.fillRect(8, 8, 118, 26);
+        g.fillStyle = "rgba(0,0,0,0.55)"; g.fillRect(8, 8, 118, 26);
         holzZeichnen(14, 21);
         g.fillStyle = holz >= HOLZ_NOETIG ? "#7dff9d" : "#fff";
-        g.font = "bold 14px sans-serif";
-        g.textBaseline = "middle";
         g.fillText(holz + " / " + HOLZ_NOETIG, 46, 22);
-        var anteil = Math.min(1, kamera / (grabenX - 190));
+        var anteil = Math.min(1, kamera / (grabenX - GRABEN_SCHIRM));
         g.fillStyle = "rgba(0,0,0,0.35)"; g.fillRect(140, 18, 250, 6);
         g.fillStyle = "#d62b2b"; g.fillRect(140, 18, 250 * anteil, 6);
 
         if (phase === "bereit") {
-          g.fillStyle = "rgba(0,0,0,0.45)"; g.fillRect(0, 0, W, H);
-          g.fillStyle = "#fff"; g.font = "bold 18px sans-serif"; g.textAlign = "center";
-          g.fillText("Tippe zum Losreiten", W / 2, H / 2 - 8);
+          g.fillStyle = "rgba(0,0,0,0.5)"; g.fillRect(-5, -5, W + 10, H + 10);
+          g.fillStyle = "#fff"; g.textAlign = "center";
+          g.font = "bold 18px sans-serif"; g.fillText("Tippe zum Losreiten", W / 2, H / 2 - 14);
           g.font = "13px sans-serif";
-          g.fillText("Tippen = springen", W / 2, H / 2 + 16);
+          g.fillText("Kurz tippen = kleiner Sprung", W / 2, H / 2 + 10);
+          g.fillText("Gedrückt halten = hoher Sprung", W / 2, H / 2 + 28);
           g.textAlign = "left";
         }
+        g.restore();
       }
 
-      // Nur für automatische Tests (Adresse mit ?test): Spielzustand auslesen
+      // Nur für automatische Tests (Adresse mit ?test)
       if (/[?&]test\b/.test(location.search)) {
         window.spielTest = {
-          zustand: function () { return { phase: phase, kamera: kamera, reiter: reiter, holz: holz, welt: welt, tempo: tempo() }; },
-          springen: springen,
-          schritt: function (dt) { aktualisieren(dt); zeichnen(); }
+          zustand: function () { return { phase: phase, kamera: kamera, reiter: reiter, holz: holz, welt: welt, tempo: tempoBei(kamera), grabenX: grabenX }; },
+          druecken: druecken, loslassen: loslassen, neu: neu,
+          schritt: function (dt, ohneBild) { aktualisieren(dt); if (!ohneBild) zeichnen(); }
         };
       }
 
