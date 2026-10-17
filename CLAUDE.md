@@ -24,7 +24,8 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
     zur Burg muss mindestens 2/3 aller Felder durchqueren (MIN_ANTEIL, mindestens 75 von 112), sonst wird neu gewürfelt.
     Jede Heckenberührung erzeugt ein neues Labyrinth und der Ritter beginnt wieder vor dem Eingang
   - Royals-Quiz: Pool von 50 Fragen (Großbritannien inkl. erweiterter Familie, Japan, weitere europäische Königshäuser,
-    10 "Wer ist das?"-Fragen mit Foto) in config.js. Pro Runde 10 zufällige ohne Wiederholung aus der vorigen Runde,
+    10 "Wer ist das?"-Fragen mit Foto) in config.js, jede Frage mit "bereich" (gb, eu, jp). Pro Runde 10 Fragen nach
+    fester Quote (quote: 4 Großbritannien, 4 Europa, 2 Japan), zufällig und ohne Wiederholung aus der vorigen Runde,
     Antworten gemischt (erste Antwort im Pool ist die richtige). Keine Rückmeldung pro Frage, am Ende nur "Toll"
     (mindestensRichtig erreicht, derzeit 10 von 10) oder "Pech gehabt, nächstes Mal mehr Glück".
     Fotos gehören nach site/bilder/royals/ (charles, anne, camilla, harry, naruhito, masako, aiko, maxima, letizia,

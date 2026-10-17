@@ -42,6 +42,7 @@
       var LETZTE = "gb-quiz-letzte-runde";
       var karte = document.getElementById("karte");
       var balken = document.getElementById("balken");
+      var QUOTE = Q.quote || { gb: 4, eu: 4, jp: 2 };
       var verfuegbar, ANZAHL, MINDESTENS, runde, nr, punkte;
 
       function bildPfad(f) { return Fortschritt.wurzel + f.bild; }
@@ -68,13 +69,24 @@
         try { return JSON.parse(localStorage.getItem(LETZTE)) || []; } catch (e) { return []; }
       }
 
-      // Neue Runde: Fragen aus der vorigen Runde kommen nicht wieder dran (solange genug übrig sind)
+      // Zieht anzahl Fragen aus liste, bevorzugt solche, die in der vorigen Runde nicht dran waren
+      function ziehen(liste, anzahl, letzte) {
+        var neu = mischen(liste.filter(function (i) { return letzte.indexOf(i) < 0; }));
+        if (neu.length < anzahl) neu = neu.concat(mischen(liste.filter(function (i) { return neu.indexOf(i) < 0; })));
+        return neu.slice(0, anzahl);
+      }
+
+      // Neue Runde: je Bereich genau so viele Fragen wie in der Quote, danach alles gemischt
       function start() {
-        var alle = verfuegbar.slice();
         var letzte = letzteLaden();
-        var neu = mischen(alle.filter(function (i) { return letzte.indexOf(i) < 0; }));
-        if (neu.length < ANZAHL) neu = neu.concat(mischen(alle.filter(function (i) { return neu.indexOf(i) < 0; })));
-        runde = neu.slice(0, ANZAHL);
+        runde = [];
+        Object.keys(QUOTE).forEach(function (b) {
+          var imBereich = verfuegbar.filter(function (i) { return Q.fragen[i].bereich === b; });
+          runde = runde.concat(ziehen(imBereich, QUOTE[b], letzte));
+        });
+        // Falls ein Bereich zu wenige Fragen hat, mit beliebigen anderen auffüllen
+        if (runde.length < ANZAHL) runde = runde.concat(ziehen(verfuegbar.filter(function (i) { return runde.indexOf(i) < 0; }), ANZAHL - runde.length, letzte));
+        runde = mischen(runde);
         try { localStorage.setItem(LETZTE, JSON.stringify(runde)); } catch (e) {}
         nr = 0;
         punkte = 0;
@@ -139,7 +151,7 @@
       karte.innerHTML = '<p class="mitte leise">Fragen werden geladen …</p>';
       bilderPruefen().then(function (liste) {
         verfuegbar = liste;
-        ANZAHL = Math.min(Q.fragenProRunde || 10, verfuegbar.length);
+        ANZAHL = Math.min(Object.keys(QUOTE).reduce(function (s, b) { return s + QUOTE[b]; }, 0), verfuegbar.length);
         MINDESTENS = Math.min(Q.mindestensRichtig || ANZAHL, ANZAHL);
         document.getElementById("regel").textContent =
           "Beantworte " + ANZAHL + " Fragen rund um die Königshäuser der Welt. Ob eine Antwort stimmt, erfährst du erst am Ende. " +
