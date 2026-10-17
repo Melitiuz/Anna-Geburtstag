@@ -19,6 +19,9 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
 - `site/spiele/` : mastermind.html, quiz.html, schiebepuzzle.html, labyrinth.html
   - Obst-Mastermind: Code aus 5 Früchten (Apfel, Birne, Kirsche, Aprikose, Zwetschge, Zitrone, Wiederholung erlaubt),
     7 Versuche, nach "Einloggen" nur Anzahlen: grün = richtiger Platz, gelb = falscher Platz, rot = falsch
+  - Ritter-Labyrinth: 9 x 9 Felder, Burghof (3 x 3) in der Mitte mit einem Zugang, Ritter startet außerhalb,
+    3 Eingänge an verschiedenen Seiten, nur einer führt zur Burg (die anderen in getrennte Sackgassen-Bereiche),
+    bei jedem neuen Labyrinth zufällig erzeugt; Heckenberührung schickt den Ritter zurück zum Start
 - `site/js/config.js` : Name der beschenkten Person, Nachricht im Popup (Text, Link, Gruß), Lösung (Platz und Variante je Figur) und Quizfragen
 - `site/js/motive.js` : die vier Figuren mit ihren Varianten als SVG, Hinweistexte und die Felder des 2 x 2 Rasters
 - `site/js/fortschritt.js` : Speichern des Fortschritts, Zuordnung Spiel zu Motiv, Gewinn-Overlay, Konfetti
