@@ -2,6 +2,16 @@
 window.GEBURTSTAG = {
   name: "Geburtstagskind",
 
+  // Erscheint als Popup, wenn alle vier Motive richtig im Bild liegen.
+  // link ist optional: leer lassen ("") wenn kein Knopf erscheinen soll.
+  nachricht: {
+    titel: "Herzlichen Glückwunsch!",
+    text: "Du hast alle Spiele gemeistert und das Bild vervollständigt. Ich wünsche dir einen wunderschönen Geburtstag voller Freude und Überraschungen. Dein Geschenk wartet hier auf dich:",
+    link: "https://example.com",
+    linkText: "Zum Geschenk",
+    gruss: "Alles Liebe"
+  },
+
   // Quiz: Fragen über die beschenkte Person. "richtig" ist der Index der richtigen Antwort (ab 0).
   quiz: {
     mindestensRichtig: 4,

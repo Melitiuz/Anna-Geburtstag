@@ -12,17 +12,19 @@
     <header class="kopf">
       <div style="font-size:3rem" aria-hidden="true">🎂</div>
       <h1>Alles Gute, <span id="name"></span>!</h1>
-      <p class="unterzeile">Dein Geschenk ist gut versteckt. Gewinne alle vier Spiele und sammle die vier Teile eines QR Codes. Zusammengesetzt verraten sie dir, wo es auf dich wartet.</p>
+      <p class="unterzeile">Dein Geschenk ist gut versteckt. Jedes Spiel schaltet ein Motiv frei. Setze alle vier richtig ins Bild, dann erfährst du, wo es auf dich wartet.</p>
       <div class="fortschritt" id="fortschritt" aria-label="Fortschritt"></div>
     </header>
 
     <section class="spiele" id="spiele"></section>
 
-    <section class="karte mitte" id="sammlung" hidden style="margin-top:24px">
-      <h2>Deine Viertel</h2>
-      <p class="leise" id="sammlung-text"></p>
-      <div class="puzzle offen" id="puzzle"></div>
-      <p id="fertig-text" hidden><strong>Perfekt zusammengesetzt!</strong> Scanne den Code jetzt mit der Kamera eines zweiten Handys.</p>
+    <section class="karte mitte" style="margin-top:24px">
+      <h2>Dein Bild</h2>
+      <p class="leise" id="bild-text"></p>
+      <div class="bild" id="bild"></div>
+      <div class="ablage" id="ablage"></div>
+      <p style="margin-top:16px"><button class="knopf breit" type="button" id="pruefen" disabled>Bestätigen</button></p>
+      <p class="leise" id="pruef-text" aria-live="polite"></p>
     </section>
 
     <footer class="fuss">
@@ -31,11 +33,12 @@
   </main>
 
   <script src="js/config.js"></script>
+  <script src="js/motive.js"></script>
   <script src="js/fortschritt.js"></script>
   <script>
     (function () {
-      var F = window.Fortschritt;
-      document.getElementById("name").textContent = window.GEBURTSTAG.name;
+      var F = window.Fortschritt, M = window.Motive, G = window.GEBURTSTAG;
+      document.getElementById("name").textContent = G.name;
 
       // Fortschrittsanzeige und Spieleliste
       var leiste = document.getElementById("fortschritt");
@@ -53,70 +56,199 @@
         a.innerHTML =
           '<div class="symbol" aria-hidden="true">' + s.symbol + "</div>" +
           '<div class="info"><div class="titel">' + s.titel + '</div><div class="status">' +
-          (ok ? "Geschafft, Viertel gesammelt" : s.text) + "</div></div>" +
+          (ok ? "Geschafft, Motiv freigeschaltet" : s.text) + "</div></div>" +
           '<div class="pfeil" aria-hidden="true">›</div>';
         liste.appendChild(a);
       });
 
-      // Sammlung: gewonnene Viertel in zufälliger Anordnung, Tippen tauscht zwei Felder
+      // Bild mit Zielplätzen
+      var bild = document.getElementById("bild");
+      var ablage = document.getElementById("ablage");
+      var knopf = document.getElementById("pruefen");
+      var pruefText = document.getElementById("pruef-text");
       var anzahl = F.anzahlGewonnen();
-      if (anzahl > 0) {
-        var bereich = document.getElementById("sammlung");
-        var puzzle = document.getElementById("puzzle");
-        var text = document.getElementById("sammlung-text");
-        bereich.hidden = false;
-        text.textContent = anzahl < 4
-          ? anzahl + " von 4 Vierteln gesammelt. Spiel weiter, um den Rest zu bekommen."
-          : "Alle vier Viertel sind da! Tippe nacheinander zwei Teile an, um sie zu tauschen. Die Markierungen an den Ecken helfen dir.";
 
-        var teile = [0, 1, 2, 3];
-        do {
-          for (var i = teile.length - 1; i > 0; i--) {
-            var j = Math.floor(Math.random() * (i + 1));
-            var t = teile[i]; teile[i] = teile[j]; teile[j] = t;
-          }
-        } while (anzahl === 4 && teile.join() === "0,1,2,3");
+      document.getElementById("bild-text").textContent = anzahl < 4
+        ? anzahl + " von 4 Motiven freigeschaltet. Ziehe sie mit dem Finger an die passende Stelle im Bild."
+        : "Alle Motive sind da! Ziehe jedes an seinen Platz und tippe dann auf Bestätigen.";
 
-        var besitz = {};
-        F.SPIELE.forEach(function (s) { if (F.gewonnen(s.id)) besitz[s.teil] = true; });
+      bild.innerHTML = M.SZENE;
+      var plaetze = M.PLAETZE.map(function (p) {
+        var d = document.createElement("div");
+        d.className = "platz";
+        d.dataset.motiv = p.motiv;
+        d.style.left = ((p.x - p.s / 2) / 400) * 100 + "%";
+        d.style.top = ((p.y - p.s / 2) / 300) * 100 + "%";
+        d.style.width = (p.s / 400) * 100 + "%";
+        d.style.height = (p.s / 300) * 100 + "%";
+        d.innerHTML = '<div class="schatten">' + M.MOTIVE[p.motiv].svg + "</div>";
+        bild.appendChild(d);
+        return d;
+      });
 
-        var felder = teile.map(function (teil) {
-          var b = document.createElement("button");
-          b.type = "button";
-          b.dataset.teil = teil;
-          if (besitz[teil]) {
-            b.appendChild(F.viertelBild(teil));
-          } else {
-            b.innerHTML = '<div style="display:grid;place-items:center;height:100%;font-size:2.4rem;color:#d8bfae;background:#fbf1e8">?</div>';
-            b.disabled = true;
-          }
-          puzzle.appendChild(b);
-          return b;
-        });
-
-        var gewaehlt = null;
-        puzzle.addEventListener("click", function (e) {
-          var b = e.target.closest("button");
-          if (!b || b.disabled || anzahl < 4) return;
-          if (!gewaehlt) { gewaehlt = b; b.classList.add("gewaehlt"); return; }
-          if (gewaehlt !== b) {
-            var halter = document.createElement("span");
-            puzzle.replaceChild(halter, gewaehlt);
-            puzzle.replaceChild(gewaehlt, b);
-            puzzle.replaceChild(b, halter);
-          }
-          gewaehlt.classList.remove("gewaehlt");
-          gewaehlt = null;
-          pruefen();
-        });
-
-        function pruefen() {
-          var reihenfolge = Array.prototype.map.call(puzzle.children, function (b) { return b.dataset.teil; }).join();
-          var fertig = anzahl === 4 && reihenfolge === "0,1,2,3";
-          puzzle.classList.toggle("offen", !fertig);
-          document.getElementById("fertig-text").hidden = !fertig;
-          if (fertig) F.konfetti();
+      var felder = {};
+      F.SPIELE.forEach(function (s) {
+        var feld = document.createElement("div");
+        feld.className = "ablage-feld";
+        feld.dataset.motiv = s.motiv;
+        if (F.gewonnen(s.id)) {
+          var m = document.createElement("div");
+          m.className = "motiv";
+          m.dataset.motiv = s.motiv;
+          m.setAttribute("aria-label", M.MOTIVE[s.motiv].name);
+          m.innerHTML = M.MOTIVE[s.motiv].svg;
+          feld.appendChild(m);
+        } else {
+          feld.classList.add("gesperrt");
+          feld.textContent = "?";
         }
+        felder[s.motiv] = feld;
+        ablage.appendChild(feld);
+      });
+
+      function belegung(platz) { return platz.querySelector(".motiv"); }
+
+      function zurueck(m) { felder[m.dataset.motiv].appendChild(m); }
+
+      function setzen(m, platz) {
+        var alt = belegung(platz);
+        if (alt === m) return;
+        var herkunft = m.parentNode;
+        if (alt) {
+          if (herkunft.classList.contains("platz")) herkunft.appendChild(alt);
+          else zurueck(alt);
+        }
+        platz.appendChild(m);
+      }
+
+      function aktualisieren() {
+        var voll = plaetze.every(belegung);
+        knopf.disabled = !voll;
+        pruefText.textContent = "";
+      }
+
+      function platzUnter(x, y) {
+        var bester = null, abstand = Infinity;
+        plaetze.forEach(function (p) {
+          var r = p.getBoundingClientRect(), rand = 12;
+          if (x < r.left - rand || x > r.right + rand || y < r.top - rand || y > r.bottom + rand) return;
+          var d = Math.hypot(x - (r.left + r.width / 2), y - (r.top + r.height / 2));
+          if (d < abstand) { abstand = d; bester = p; }
+        });
+        return bester;
+      }
+
+      // Ziehen mit Finger oder Maus. Kurzes Antippen wählt ein Motiv aus, danach Tippen auf einen Platz.
+      var zug = null, gewaehlt = null;
+
+      function waehlen(m) {
+        if (gewaehlt) gewaehlt.classList.remove("gewaehlt");
+        gewaehlt = m && m !== gewaehlt ? m : null;
+        if (gewaehlt) gewaehlt.classList.add("gewaehlt");
+      }
+
+      document.addEventListener("pointerdown", function (e) {
+        var m = e.target.closest(".motiv");
+        if (!m || !document.body.contains(m) || m.closest(".overlay")) return;
+        e.preventDefault();
+        var r = m.getBoundingClientRect();
+        zug = { m: m, id: e.pointerId, x: e.clientX, y: e.clientY, groesse: Math.max(r.width, 64), aktiv: false, geist: null };
+      });
+
+      document.addEventListener("pointermove", function (e) {
+        if (!zug || e.pointerId !== zug.id) return;
+        if (!zug.aktiv) {
+          if (Math.hypot(e.clientX - zug.x, e.clientY - zug.y) < 6) return;
+          zug.aktiv = true;
+          waehlen(null);
+          zug.geist = document.createElement("div");
+          zug.geist.className = "schwebt";
+          zug.geist.style.width = zug.geist.style.height = zug.groesse + "px";
+          zug.geist.innerHTML = zug.m.innerHTML;
+          document.body.appendChild(zug.geist);
+          zug.m.classList.add("zieht");
+        }
+        zug.geist.style.left = e.clientX + "px";
+        zug.geist.style.top = e.clientY + "px";
+        var ziel = platzUnter(e.clientX, e.clientY);
+        plaetze.forEach(function (p) { p.classList.toggle("ziel-aktiv", p === ziel); });
+      });
+
+      function zugEnde(e) {
+        if (!zug || e.pointerId !== zug.id) return;
+        var z = zug;
+        zug = null;
+        plaetze.forEach(function (p) { p.classList.remove("ziel-aktiv"); });
+        if (!z.aktiv) { waehlen(z.m); return; }
+        z.geist.remove();
+        z.m.classList.remove("zieht");
+        var ziel = e.type === "pointerup" ? platzUnter(e.clientX, e.clientY) : null;
+        if (ziel) setzen(z.m, ziel);
+        else if (e.type === "pointerup") zurueck(z.m);
+        aktualisieren();
+      }
+      document.addEventListener("pointerup", zugEnde);
+      document.addEventListener("pointercancel", zugEnde);
+
+      // Antippen eines Platzes oder der Ablage, wenn ein Motiv ausgewählt ist
+      bild.addEventListener("click", function (e) {
+        if (!gewaehlt || e.target.closest(".motiv")) return;
+        var p = e.target.closest(".platz") || platzUnter(e.clientX, e.clientY);
+        if (!p) return;
+        setzen(gewaehlt, p);
+        waehlen(null);
+        aktualisieren();
+      });
+      ablage.addEventListener("click", function (e) {
+        if (!gewaehlt || e.target.closest(".motiv")) return;
+        zurueck(gewaehlt);
+        waehlen(null);
+        aktualisieren();
+      });
+
+      knopf.addEventListener("click", function () {
+        var falsche = plaetze.filter(function (p) {
+          var m = belegung(p);
+          return !m || m.dataset.motiv !== p.dataset.motiv;
+        });
+        if (falsche.length) {
+          pruefText.textContent = falsche.length === 1
+            ? "Fast! Ein Motiv steht noch an der falschen Stelle."
+            : "Noch nicht ganz. " + falsche.length + " Motive stehen an der falschen Stelle.";
+          falsche.forEach(function (p) {
+            p.classList.remove("falsch");
+            void p.offsetWidth;
+            p.classList.add("falsch");
+          });
+          return;
+        }
+        pruefText.textContent = "Alles richtig!";
+        nachrichtZeigen();
+      });
+
+      function nachrichtZeigen() {
+        var N = G.nachricht;
+        var o = document.createElement("div");
+        o.className = "overlay";
+        o.innerHTML =
+          '<div class="karte" role="dialog" aria-modal="true">' +
+          '<div style="font-size:3.5rem" aria-hidden="true">🎁</div>' +
+          "<h2></h2><p class=\"text\"></p>" +
+          (N.link ? '<p><a class="knopf" target="_blank" rel="noopener"></a></p>' : "") +
+          '<p class="leise" style="font-style:italic"></p>' +
+          '<p><button class="knopf zweit" type="button">Schließen</button></p>' +
+          "</div>";
+        o.querySelector("h2").textContent = N.titel;
+        o.querySelector(".text").textContent = N.text;
+        o.querySelector(".leise").textContent = N.gruss;
+        if (N.link) {
+          var a = o.querySelector("a");
+          a.href = N.link;
+          a.textContent = N.linkText;
+        }
+        o.querySelector("button").addEventListener("click", function () { o.remove(); });
+        document.body.appendChild(o);
+        F.konfetti();
       }
 
       document.getElementById("reset").addEventListener("click", function () {

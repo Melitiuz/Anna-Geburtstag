@@ -135,29 +135,44 @@ p { margin: 0 0 12px; }
 }
 .fortschritt span.an { background: var(--gruen); }
 
-/* Puzzle aus den Vierteln */
-.puzzle {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  width: min(100%, 360px);
-  margin: 16px auto;
-  background: #fff;
-  border-radius: 6px;
+/* Bild mit Zielplätzen für die Motive */
+.bild {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  margin: 16px auto 12px;
+  border-radius: 14px;
   overflow: hidden;
   box-shadow: var(--schatten);
-  touch-action: manipulation;
+  user-select: none; -webkit-user-select: none;
 }
-.puzzle.offen { gap: 6px; background: transparent; box-shadow: none; overflow: visible; }
-.puzzle button {
-  padding: 0; border: none; background: #fff; cursor: pointer;
-  display: block; width: 100%; aspect-ratio: 1;
-  outline: 3px solid transparent;
-  transition: outline-color 0.15s, transform 0.15s;
+.bild > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.platz { position: absolute; border-radius: 12px; transition: background 0.15s, outline-color 0.15s; outline: 3px dashed transparent; outline-offset: -3px; }
+.platz .schatten { position: absolute; inset: 0; filter: brightness(0); opacity: 0.16; pointer-events: none; }
+.platz.ziel-aktiv { outline-color: rgba(255, 255, 255, 0.95); background: rgba(255, 255, 255, 0.3); }
+.platz.falsch { animation: wackeln 0.4s; }
+@keyframes wackeln { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
+.motiv { touch-action: none; cursor: grab; position: relative; }
+.motiv svg, .motiv-gross svg, .platz svg { display: block; width: 100%; height: 100%; }
+.platz .motiv { position: absolute; inset: 0; }
+.motiv.gewaehlt { filter: drop-shadow(0 0 6px var(--akzent)); }
+.motiv.zieht { opacity: 0.25; }
+.schwebt { position: fixed; z-index: 70; pointer-events: none; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.3)); transform: translate(-50%, -50%) scale(1.08); }
+
+.ablage {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  min-height: 84px;
+  padding: 8px;
+  background: var(--bg-2);
+  border-radius: 14px;
 }
-.puzzle button img, .puzzle button canvas { display: block; width: 100%; height: 100%; }
-.puzzle button.gewaehlt { outline-color: var(--akzent); transform: scale(0.96); z-index: 1; }
-.puzzle.offen button { border-radius: 6px; box-shadow: var(--schatten); }
+.ablage-feld { aspect-ratio: 1; display: grid; place-items: center; border-radius: 10px; background: rgba(255, 255, 255, 0.6); }
+.ablage-feld .motiv { width: 100%; height: 100%; }
+.ablage-feld.gesperrt { color: #d8bfae; font-size: 1.8rem; font-weight: 700; }
+.motiv-gross { width: min(50vw, 180px); aspect-ratio: 1; margin: 8px auto; }
 
 /* Gewinn-Overlay */
 .overlay {
