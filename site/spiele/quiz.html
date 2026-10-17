@@ -17,6 +17,8 @@
     .antwort.gewaehlt { background: rgba(255, 255, 255, 0.18); border-color: #fff; }
     .balken { height: 8px; background: var(--rand); border-radius: 99px; overflow: hidden; margin-bottom: 16px; }
     .balken div { height: 100%; background: var(--akzent-2); width: 0; transition: width 0.3s; }
+    .quizbild { display: block; width: 100%; max-height: 260px; object-fit: cover; object-position: center 25%; border-radius: 10px; margin: 6px 0 4px; background: #222; }
+    .bildquelle { font-size: 0.7rem; color: #8a8a8a; text-align: right; }
     .nummer { color: var(--akzent); font-family: var(--schrift-schmal); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
   </style>
 </head>
@@ -37,14 +39,25 @@
   <script>
     (function () {
       var Q = window.GEBURTSTAG.quiz;
-      var ANZAHL = Math.min(Q.fragenProRunde || 5, Q.fragen.length);
       var LETZTE = "gb-quiz-letzte-runde";
       var karte = document.getElementById("karte");
       var balken = document.getElementById("balken");
-      var runde, nr, punkte;
+      var verfuegbar, ANZAHL, MINDESTENS, runde, nr, punkte;
 
-      document.getElementById("regel").textContent =
-        "Beantworte " + ANZAHL + " Fragen rund um die Königshäuser der Welt. Ob eine Antwort stimmt, erfährst du erst am Ende. Nur wenn alle richtig sind, ist die Quest gelöst.";
+      function bildPfad(f) { return Fortschritt.wurzel + f.bild; }
+
+      // Bildfragen nur verwenden, wenn das Bild auch wirklich geladen werden kann
+      function bilderPruefen() {
+        return Promise.all(Q.fragen.map(function (f, i) {
+          if (!f.bild) return Promise.resolve(i);
+          return new Promise(function (fertig) {
+            var img = new Image();
+            img.onload = function () { fertig(i); };
+            img.onerror = function () { fertig(-1); };
+            img.src = bildPfad(f);
+          });
+        })).then(function (liste) { return liste.filter(function (i) { return i >= 0; }); });
+      }
 
       function mischen(a) {
         for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
@@ -57,7 +70,7 @@
 
       // Neue Runde: Fragen aus der vorigen Runde kommen nicht wieder dran (solange genug übrig sind)
       function start() {
-        var alle = Q.fragen.map(function (f, i) { return i; });
+        var alle = verfuegbar.slice();
         var letzte = letzteLaden();
         var neu = mischen(alle.filter(function (i) { return letzte.indexOf(i) < 0; }));
         if (neu.length < ANZAHL) neu = neu.concat(mischen(alle.filter(function (i) { return neu.indexOf(i) < 0; })));
@@ -75,6 +88,19 @@
         karte.innerHTML = '<div class="nummer">Frage ' + (nr + 1) + " von " + ANZAHL + "</div><h2></h2>" +
           '<div class="antworten"></div>';
         karte.querySelector("h2").textContent = f.frage;
+        if (f.bild) {
+          var img = document.createElement("img");
+          img.className = "quizbild";
+          img.alt = "Foto zur Frage";
+          img.src = bildPfad(f);
+          karte.insertBefore(img, karte.querySelector(".antworten"));
+          if (f.quelle) {
+            var q = document.createElement("div");
+            q.className = "bildquelle";
+            q.textContent = "Foto: " + f.quelle.urheber + ", " + f.quelle.lizenz + ", via Wikimedia Commons";
+            karte.insertBefore(q, karte.querySelector(".antworten"));
+          }
+        }
         var box = karte.querySelector(".antworten");
         // Die erste Antwort im Pool ist die richtige, hier wird gemischt
         mischen(f.antworten.map(function (text, i) { return { text: text, richtig: i === 0 }; })).forEach(function (a) {
@@ -97,10 +123,12 @@
       }
 
       function ende() {
-        var geschafft = punkte === ANZAHL;
+        var geschafft = punkte >= MINDESTENS;
         karte.innerHTML = '<div class="mitte">' +
           (geschafft
-            ? '<div style="font-size:3rem" aria-hidden="true">👑</div><h2>Toll!</h2><p>Du hast alle Fragen richtig beantwortet. Eine wahre Kennerin der Königshäuser!</p>'
+            ? '<div style="font-size:3rem" aria-hidden="true">👑</div><h2>Toll!</h2><p>' +
+              (punkte === ANZAHL ? "Du hast alle Fragen richtig beantwortet." : "Du hast genug Fragen richtig beantwortet.") +
+              " Eine wahre Kennerin der Königshäuser!</p>"
             : '<div style="font-size:3rem" aria-hidden="true">🍀</div><h2>Pech gehabt!</h2><p>Leider war nicht alles richtig. Nächstes Mal mehr Glück!</p>' +
               '<button class="knopf" type="button" id="nochmal">Noch einmal</button>') +
           "</div>";
@@ -108,7 +136,16 @@
         else document.getElementById("nochmal").addEventListener("click", start);
       }
 
-      start();
+      karte.innerHTML = '<p class="mitte leise">Fragen werden geladen …</p>';
+      bilderPruefen().then(function (liste) {
+        verfuegbar = liste;
+        ANZAHL = Math.min(Q.fragenProRunde || 10, verfuegbar.length);
+        MINDESTENS = Math.min(Q.mindestensRichtig || ANZAHL, ANZAHL);
+        document.getElementById("regel").textContent =
+          "Beantworte " + ANZAHL + " Fragen rund um die Königshäuser der Welt. Ob eine Antwort stimmt, erfährst du erst am Ende. " +
+          (MINDESTENS === ANZAHL ? "Nur wenn alle richtig sind, ist die Quest gelöst." : "Mindestens " + MINDESTENS + " müssen richtig sein.");
+        start();
+      });
     })();
   </script>
 </body>

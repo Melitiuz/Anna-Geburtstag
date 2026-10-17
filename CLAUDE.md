@@ -23,9 +23,14 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
     der Ritter startet direkt davor. Gleich hinter dem Eingang eine Kreuzung mit drei Pfaden (links, geradeaus, rechts),
     nur einer führt zur Burg, die anderen in getrennte Sackgassen-Bereiche. Bei jedem neuen Labyrinth zufällig erzeugt;
     Heckenberührung schickt den Ritter zurück zum Start
-  - Royals-Quiz: Pool von 20 Fragen (Royals, auch Japan) in config.js, pro Runde 5 zufällige ohne Wiederholung aus der
-    vorigen Runde, Antworten gemischt (erste Antwort im Pool ist die richtige). Keine Rückmeldung pro Frage, am Ende
-    nur "Toll, alles richtig" (Quest gelöst) oder "Pech gehabt, nächstes Mal mehr Glück"
+  - Royals-Quiz: Pool von 50 Fragen (Großbritannien inkl. erweiterter Familie, Japan, weitere europäische Königshäuser,
+    10 "Wer ist das?"-Fragen mit Foto) in config.js. Pro Runde 10 zufällige ohne Wiederholung aus der vorigen Runde,
+    Antworten gemischt (erste Antwort im Pool ist die richtige). Keine Rückmeldung pro Frage, am Ende nur "Toll"
+    (mindestensRichtig erreicht, derzeit 10 von 10) oder "Pech gehabt, nächstes Mal mehr Glück".
+    Fotos gehören nach site/bilder/royals/ (charles, anne, camilla, harry, naruhito, masako, aiko, maxima, letizia,
+    silvia als .jpg, von Wikimedia Commons). Fehlt ein Foto, wird die Frage automatisch weggelassen.
+    Quellenangabe je Foto steht in config.js (quelle) und erscheint unter dem Foto sowie auf site/bildnachweis.html
+    (verlinkt im Fuß der Startseite). Neue Fotos nur mit freier Lizenz und mit Quellenangabe einbinden.
 - `site/js/config.js` : Name der beschenkten Person, Nachricht im Popup (Text, Link, Gruß), Lösung (Platz und Variante je Figur) und Quizfragen
 - `site/js/motive.js` : die vier Figuren mit ihren Varianten als SVG, Hinweistexte und die Felder des 2 x 2 Rasters
 - `site/js/fortschritt.js` : Speichern des Fortschritts, Zuordnung Spiel zu Motiv, Gewinn-Overlay, Konfetti
@@ -65,5 +70,6 @@ Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Royals-Quiz → Prinzessin, 
 - [x] Geschenk-Link: https://www.bodaborg.de/bochum/
 - [ ] Nachricht zum Geschenk (Text folgt)
 - [x] Spiele: Obst-Mastermind, Royals-Quiz, Schiebepuzzle, Ritter-Labyrinth (Geschicklichkeit)
-- [x] Quizfragen: 20 Fragen zum Thema Royals (auch Japan)
+- [x] Quizfragen: 50 Fragen zum Thema Royals (auch Japan), 10 pro Runde
+- [x] Fotos für die 10 "Wer ist das?"-Fragen (Wikimedia Commons, freie Lizenzen, Nachweis auf bildnachweis.html)
 - [ ] Veröffentlichen (später, voraussichtlich GitHub Pages)

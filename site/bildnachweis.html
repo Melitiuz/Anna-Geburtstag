@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Bildnachweis</title>
+  <link rel="stylesheet" href="css/stil.css">
+  <style>
+    .liste { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .liste li { background: var(--karte-2); border-left: 4px solid var(--akzent); border-radius: 8px; padding: 10px 12px; font-size: 0.92rem; }
+    .liste a { color: #fff; }
+  </style>
+</head>
+<body>
+  <main class="seite">
+    <a class="zurueck" href="index.html">‹ Übersicht</a>
+    <header class="kopf">
+      <h1>Bildnachweis</h1>
+      <p class="unterzeile">Die Fotos im Royals-Quiz stammen von Wikimedia Commons und stehen unter freien Lizenzen. Sie wurden für diese Seite verkleinert.</p>
+    </header>
+    <ul class="liste" id="liste"></ul>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script>
+    (function () {
+      var liste = document.getElementById("liste");
+      window.GEBURTSTAG.quiz.fragen.forEach(function (f) {
+        if (!f.quelle) return;
+        var q = f.quelle;
+        var li = document.createElement("li");
+        var datei = document.createElement("a");
+        datei.href = q.seite;
+        datei.target = "_blank";
+        datei.rel = "noopener";
+        datei.textContent = decodeURIComponent(q.seite.split("File:")[1] || q.seite).replace(/_/g, " ");
+        li.appendChild(datei);
+        li.appendChild(document.createTextNode(" · Urheber: " + q.urheber + " · Lizenz: "));
+        if (q.lizenzUrl) {
+          var lizenz = document.createElement("a");
+          lizenz.href = q.lizenzUrl;
+          lizenz.target = "_blank";
+          lizenz.rel = "noopener";
+          lizenz.textContent = q.lizenz;
+          li.appendChild(lizenz);
+        } else {
+          li.appendChild(document.createTextNode(q.lizenz));
+        }
+        liste.appendChild(li);
+      });
+    })();
+  </script>
+</body>
+</html>
