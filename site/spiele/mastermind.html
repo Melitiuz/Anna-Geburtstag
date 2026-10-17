@@ -56,7 +56,7 @@
     <a class="zurueck" href="../index.html">‹ Übersicht</a>
     <header class="kopf">
       <h1>🍎 Obst-Mastermind</h1>
-      <p class="unterzeile">Errate den geheimen Obst-Code aus 5 Früchten. Jede Sorte kann mehrfach vorkommen. Du hast 8 Versuche.</p>
+      <p class="unterzeile">Errate den geheimen Obst-Code aus <span id="t-laenge">5</span> Früchten. Jede Sorte kann mehrfach vorkommen. Du hast <span id="t-versuche">7</span> Versuche.</p>
     </header>
     <div class="legende">
       <span><i class="punkt gruen"></i>richtig und am richtigen Platz</span>
@@ -85,7 +85,9 @@
   <script src="../js/fortschritt.js"></script>
   <script>
     (function () {
-      var LAENGE = 5, VERSUCHE = 8;
+      var LAENGE = 5, VERSUCHE = 7;
+      document.getElementById("t-laenge").textContent = LAENGE;
+      document.getElementById("t-versuche").textContent = VERSUCHE;
 
       function svg(inhalt) { return '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">' + inhalt + "</svg>"; }
       var OBST = [
