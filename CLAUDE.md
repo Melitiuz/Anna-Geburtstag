@@ -16,7 +16,7 @@ Stimmen bei allen vier Figuren Platz und Variante, erscheint nach "Bestätigen" 
 ## Aufbau
 Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später veröffentlicht werden.
 - `site/index.html` : Startseite mit Übersicht der 4 Quests, Fortschritt, 2 x 2 Feld, Ablage der Figuren, Hinweisen und Prüfen
-- `site/spiele/` : mastermind.html, quiz.html, schiebepuzzle.html, labyrinth.html
+- `site/spiele/` : mastermind.html, quiz.html, brueckenritt.html, labyrinth.html
   - Obst-Mastermind: Code aus 5 Früchten (Apfel, Birne, Kirsche, Aprikose, Zwetschge, Zitrone, Wiederholung erlaubt),
     7 Versuche, nach "Einloggen" nur Anzahlen: grün = richtiger Platz, gelb = falscher Platz, rot = falsch
   - Ritter-Labyrinth: 11 x 11 Felder, Burghof (3 x 3) in der Mitte mit genau einem Zugang. Ein Eingang unten in der Mitte,
@@ -31,13 +31,16 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
     silvia als .jpg, von Wikimedia Commons). Fehlt ein Foto, wird die Frage automatisch weggelassen.
     Quellenangabe je Foto steht in config.js (quelle) und erscheint unter dem Foto sowie auf site/bildnachweis.html
     (verlinkt im Fuß der Startseite). Neue Fotos nur mit freier Lizenz und mit Quellenangabe einbinden.
+  - Brückenritt (Geschicklichkeit): Seitwärts-Laufspiel, der Ritter reitet automatisch, Tippen = springen. 30 Hölzer am
+    Boden und in der Luft, Steine und Dornenbüsche kosten 3 Hölzer. Am Ende ein Burggraben: mindestens 20 Hölzer (2/3)
+    ergeben die Brücke zur Burg, sonst neuer Versuch. Holz und Hindernisse bei jedem Versuch neu verteilt, Tempo steigt leicht
 - `site/js/config.js` : Name der beschenkten Person, Nachricht im Popup (Text, Link, Gruß), Lösung (Platz und Variante je Figur) und Quizfragen
 - `site/js/motive.js` : die vier Figuren mit ihren Varianten als SVG, Hinweistexte und die Felder des 2 x 2 Rasters
 - `site/js/fortschritt.js` : Speichern des Fortschritts, Zuordnung Spiel zu Motiv, Gewinn-Overlay, Konfetti
 - `werkzeuge/server.ps1` : Testserver ohne Python/Node (`powershell -ExecutionPolicy Bypass -File werkzeuge\server.ps1`, dann http://localhost:8080)
   - mit `-Netz` auch im WLAN erreichbar, z. B. vom Handy unter http://192.168.178.26:8080/ (Firewall-Freigabe für private Netzwerke nötig)
 
-Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Royals-Quiz → Prinzessin, Schiebepuzzle → Burg, Ritter-Labyrinth → Ritter.
+Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Royals-Quiz → Prinzessin, Brückenritt → Burg, Ritter-Labyrinth → Ritter.
 
 ## Technik
 - Rein statische Website: HTML, CSS und JavaScript, kein Server, keine Datenbank
@@ -69,7 +72,7 @@ Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Royals-Quiz → Prinzessin, 
 - [x] Name der beschenkten Person: Anna
 - [x] Geschenk-Link: https://www.bodaborg.de/bochum/
 - [ ] Nachricht zum Geschenk (Text folgt)
-- [x] Spiele: Obst-Mastermind, Royals-Quiz, Schiebepuzzle, Ritter-Labyrinth (Geschicklichkeit)
+- [x] Spiele: Obst-Mastermind, Royals-Quiz, Brückenritt (Geschicklichkeit), Ritter-Labyrinth
 - [x] Quizfragen: 50 Fragen zum Thema Royals (auch Japan), 10 pro Runde
 - [x] Fotos für die 10 "Wer ist das?"-Fragen (Wikimedia Commons, freie Lizenzen, Nachweis auf bildnachweis.html)
 - [ ] Veröffentlichen (später, voraussichtlich GitHub Pages)
