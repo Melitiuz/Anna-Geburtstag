@@ -8,7 +8,7 @@ Die Motive werden per Drag and Drop an ihre Plätze in einem fertigen Bild gezog
 Sind alle vier richtig angeordnet, erscheint nach "Bestätigen" ein Popup mit der Nachricht zum Geschenk.
 
 ## Aufbau
-Veröffentlicht wird nur der Ordner `site/` (siehe `netlify.toml`).
+Veröffentlicht wird nur der Ordner `site/` (siehe `.github/workflows/pages.yml`).
 - `site/index.html` : Startseite mit Übersicht der 4 Spiele, Fortschritt, Bild mit Zielplätzen, Ablage der Motive und Prüfen
 - `site/spiele/` : memory.html, quiz.html, schiebepuzzle.html, labyrinth.html
 - `site/js/config.js` : Name der beschenkten Person, Nachricht im Popup (Text, Link, Gruß) und Quizfragen
@@ -27,7 +27,9 @@ Zuordnung Spiel zu Motiv: Memory → Baum, Quiz → Prinzessin, Schiebepuzzle �
 ## Hosting und Workflow
 - Code liegt im GitHub Repository https://github.com/Melitiuz/Anna-Geburtstag (derzeit privat, soll später öffentlich werden)
 - Commits mit Autor `Melitiuz <Melitiuz@users.noreply.github.com>` (im Repository eingestellt)
-- Hosting noch offen: Netlify (`netlify.toml` vorhanden) oder GitHub Pages, sobald das Repository öffentlich ist
+- Hosting über GitHub Pages: `.github/workflows/pages.yml` veröffentlicht bei jedem Push auf main den Ordner `site/`
+  - Adresse: https://melitiuz.github.io/Anna-Geburtstag/
+  - Voraussetzung: Repository öffentlich, unter Settings → Pages als Quelle "GitHub Actions" gewählt
 
 ## Sprache und Stil
 - Alle Texte auf der Website auf Deutsch
@@ -40,4 +42,4 @@ Zuordnung Spiel zu Motiv: Memory → Baum, Quiz → Prinzessin, Schiebepuzzle �
 - [ ] Nachricht zum Geschenk (Text folgt)
 - [x] Spiele: Quiz, Ritter-Labyrinth (Geschicklichkeit), Memory, Schiebepuzzle
 - [ ] Quizfragen über Anna
-- [ ] Hosting festlegen
+- [x] Hosting: GitHub Pages
