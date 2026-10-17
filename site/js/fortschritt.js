@@ -46,10 +46,29 @@
     setTimeout(function () { box.remove(); }, 5000);
   }
 
+  // Statistik: Versuche je Quest und im wievielten Versuch sie zum ersten Mal gelöst wurde
+  function statistik(daten) {
+    var s = daten.statistik || {};
+    s.versuche = s.versuche || {};
+    s.geloestNach = s.geloestNach || {};
+    return s;
+  }
+
+  function versuch(id) {
+    var daten = laden();
+    var s = statistik(daten);
+    s.versuche[id] = (s.versuche[id] || 0) + 1;
+    daten.statistik = s;
+    speichern(daten);
+  }
+
   function gewinnen(id) {
     var daten = laden();
     var neu = !daten[id];
     daten[id] = true;
+    var s = statistik(daten);
+    if (neu) s.geloestNach[id] = Math.max(1, s.versuche[id] || 0);
+    daten.statistik = s;
     speichern(daten);
 
     var M = window.Motive, motivId = spiel(id).motiv, motiv = M.MOTIVE[motivId];
@@ -63,7 +82,8 @@
       '<div class="motiv-gross">' + motiv.zeichnen(M.loesung(motivId)) + "</div>" +
       "<p><strong>" + motiv.name + "</strong></p>" +
       '<p class="hinweis">💡 ' + M.hinweis(motivId) + "</p>" +
-      '<p class="leise">' + anzahl + " von 4 Figuren gesammelt</p>" +
+      '<p class="leise">' + anzahl + " von 4 Figuren gesammelt" +
+      (neu ? ", gelöst im " + s.geloestNach[id] + ". Versuch" : "") + "</p>" +
       '<a class="knopf breit" href="' + WURZEL + 'index.html">Zur Übersicht</a>' +
       "</div>";
     document.body.appendChild(o);
@@ -81,6 +101,8 @@
     gewonnen: function (id) { return !!laden()[id]; },
     anzahlGewonnen: anzahlGewonnen,
     gewinnen: gewinnen,
+    versuch: versuch,
+    statistik: function () { return statistik(laden()); },
     konfetti: konfetti,
     zuruecksetzen: function () { speichern({}); },
     spielInfo: spiel

@@ -15,7 +15,8 @@ Stimmen bei allen vier Figuren Platz und Variante, erscheint nach "Bestätigen" 
 
 ## Aufbau
 Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später veröffentlicht werden.
-- `site/index.html` : Startseite mit Übersicht der 4 Quests, Fortschritt, 2 x 2 Feld, Ablage der Figuren, Hinweisen und Prüfen
+- `site/index.html` : Startseite mit Übersicht der 4 Quests, Fortschritt, Statistik-Kachel (Versuche je Quest), 2 x 2 Feld,
+  Ablage der Figuren, Hinweisen und Prüfen
 - `site/spiele/` : mastermind.html, quiz.html, brueckenritt.html, labyrinth.html
   - Obst-Mastermind: Code aus 5 Früchten (Apfel, Birne, Kirsche, Aprikose, Zwetschge, Zitrone, Wiederholung erlaubt),
     7 Versuche, nach "Einloggen" nur Anzahlen: grün = richtiger Platz, gelb = falscher Platz, rot = falsch
@@ -42,7 +43,10 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
     (window.spielTest) für automatische Durchläufe
 - `site/js/config.js` : Name der beschenkten Person, Nachricht im Popup (Text, Link, Gruß), Lösung (Platz und Variante je Figur) und Quizfragen
 - `site/js/motive.js` : die vier Figuren mit ihren Varianten als SVG, Hinweistexte und die Felder des 2 x 2 Rasters
-- `site/js/fortschritt.js` : Speichern des Fortschritts, Zuordnung Spiel zu Motiv, Gewinn-Overlay, Konfetti
+- `site/js/fortschritt.js` : Speichern des Fortschritts und der Statistik, Zuordnung Spiel zu Motiv, Gewinn-Overlay, Konfetti
+  - Statistik: Fortschritt.versuch(id) zählt einen Versuch. Mastermind ab dem ersten eingeloggten Tipp, Quiz ab der ersten
+    Antwort einer Runde, Brückenritt beim Losreiten, Labyrinth sobald sich der Ritter in einem neuen Labyrinth bewegt.
+    Beim ersten Sieg wird gespeichert, im wievielten Versuch die Quest gelöst wurde
 - `werkzeuge/server.ps1` : Testserver ohne Python/Node (`powershell -ExecutionPolicy Bypass -File werkzeuge\server.ps1`, dann http://localhost:8080)
   - mit `-Netz` auch im WLAN erreichbar, z. B. vom Handy unter http://192.168.178.26:8080/ (Firewall-Freigabe für private Netzwerke nötig)
 

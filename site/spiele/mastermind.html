@@ -185,6 +185,7 @@
 
       knopfEin.addEventListener("click", function () {
         if (vorbei || eingabe.indexOf(null) >= 0) return;
+        if (versuch === 0) Fortschritt.versuch("mastermind"); // neues Spiel zählt ab dem ersten eingeloggten Tipp
         var w = bewerten(eingabe);
         reihen[versuch].querySelector(".wertung").innerHTML =
           '<span class="gruen" title="richtig am richtigen Platz">' + w.gruen + "</span>" +

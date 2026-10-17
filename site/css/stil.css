@@ -156,6 +156,20 @@ p { margin: 0 0 12px; }
   border-radius: 50%; border: 2px solid var(--akzent); color: var(--akzent); font-size: 1.1rem; font-weight: 700;
 }
 
+/* Statistik */
+.statistik ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.statistik li {
+  display: grid; grid-template-columns: 1fr auto; grid-template-areas: "name wert" "info wert";
+  align-items: center; column-gap: 12px;
+  background: var(--karte-2); border-radius: 8px; padding: 8px 12px; border-left: 4px solid var(--rand);
+}
+.statistik li.geloest { border-left-color: var(--akzent); }
+.statistik .name { grid-area: name; font-weight: 600; }
+.statistik .info { grid-area: info; font-size: 0.82rem; color: var(--text-leise); }
+.statistik .wert { grid-area: wert; font-family: var(--schrift-titel); font-weight: 900; font-size: 1.6rem; color: #fff; }
+.statistik li.gesamt { background: transparent; border-left-color: transparent; border-top: 2px solid var(--rand); border-radius: 0; margin-top: 4px; }
+.statistik li.gesamt .name { font-family: var(--schrift-schmal); text-transform: uppercase; letter-spacing: 0.08em; color: var(--akzent); }
+
 /* Fortschritt */
 .fortschritt { display: flex; gap: 8px; justify-content: center; margin: 16px 0 0; }
 .fortschritt span {

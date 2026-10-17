@@ -18,6 +18,12 @@
 
     <section class="spiele" id="spiele"></section>
 
+    <section class="karte statistik" style="margin-top:24px">
+      <div class="oben">Statistik</div>
+      <h2>Deine Versuche</h2>
+      <ul id="statistik"></ul>
+    </section>
+
     <section class="karte mitte" style="margin-top:24px">
       <div class="oben">Finale</div>
       <h2>Dein Bild</h2>
@@ -63,6 +69,26 @@
           '<div class="pfeil" aria-hidden="true">›</div>';
         liste.appendChild(a);
       });
+
+      // Statistik: Versuche je Quest
+      var stat = F.statistik(), statListe = document.getElementById("statistik"), summe = 0;
+      F.SPIELE.forEach(function (s) {
+        var n = stat.versuche[s.id] || 0;
+        summe += n;
+        var li = document.createElement("li");
+        li.innerHTML = '<span class="name"></span><span class="wert"></span><span class="info"></span>';
+        li.querySelector(".name").textContent = s.symbol + " " + s.titel;
+        li.querySelector(".wert").textContent = n;
+        li.querySelector(".info").textContent = F.gewonnen(s.id)
+          ? "✓ gelöst im " + (stat.geloestNach[s.id] || n || 1) + ". Versuch"
+          : (n ? "noch nicht gelöst" : "noch nicht gespielt");
+        if (F.gewonnen(s.id)) li.className = "geloest";
+        statListe.appendChild(li);
+      });
+      var gesamt = document.createElement("li");
+      gesamt.className = "gesamt";
+      gesamt.innerHTML = '<span class="name">Insgesamt</span><span class="wert">' + summe + '</span><span class="info"></span>';
+      statListe.appendChild(gesamt);
 
       // Feld, Ablage und Prüfen
       var bild = document.getElementById("bild");

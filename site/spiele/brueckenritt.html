@@ -149,7 +149,7 @@
 
       function druecken() {
         gedrueckt = true;
-        if (phase === "bereit") { phase = "laeuft"; knopf.textContent = "Springen"; letzteZeit = performance.now(); requestAnimationFrame(schleife); return; }
+        if (phase === "bereit") { phase = "laeuft"; Fortschritt.versuch("brueckenritt"); knopf.textContent = "Springen"; letzteZeit = performance.now(); requestAnimationFrame(schleife); return; }
         if (phase !== "laeuft") return;
         if (reiter.amBoden) absprung();
         else sprungPuffer = 0.12; // kurz vor der Landung gedrückt: springt sofort nach dem Aufsetzen

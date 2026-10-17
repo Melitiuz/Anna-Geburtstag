@@ -129,6 +129,7 @@
       function waehlen(richtig, b, box) {
         if (box.dataset.fertig) return;
         box.dataset.fertig = "1";
+        if (nr === 0) Fortschritt.versuch("quiz"); // neue Runde zählt ab der ersten Antwort
         if (richtig) punkte++;
         b.classList.add("gewaehlt");
         setTimeout(function () { nr++; frage(); }, 350);

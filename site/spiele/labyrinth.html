@@ -154,8 +154,10 @@
       function start() { return { x: (EX + 0.5) * zelle, y: (N + 0.5) * zelle }; }
       function mitte() { return { x: breite / 2, y: (N * zelle) / 2 }; }
 
+      var gezaehlt = false; // jedes Labyrinth zählt als Versuch, sobald sich der Ritter bewegt
       function neu() {
         plan = erzeugen();
+        gezaehlt = false;
         vermessen();
         ritter = start();
         fertig = false;
@@ -206,6 +208,7 @@
 
       function bewegen(dx, dy) {
         if (fertig || sperre) return;
+        if (!gezaehlt) { gezaehlt = true; Fortschritt.versuch("labyrinth"); }
         var schritte = Math.ceil(Math.hypot(dx, dy) / 2) || 1;
         for (var i = 0; i < schritte; i++) {
           var nx = ritter.x + dx / schritte, ny = ritter.y + dy / schritte;
