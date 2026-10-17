@@ -25,7 +25,7 @@
     <a class="zurueck" href="../index.html">‹ Übersicht</a>
     <header class="kopf">
       <h1>🏰 Ritter-Labyrinth</h1>
-      <p class="unterzeile">Der Ritter steht vor dem Heckenlabyrinth. Drei Eingänge führen hinein, aber nur einer bringt ihn zur Burg in der Mitte. Wische irgendwo auf dem Spielfeld, der Ritter bewegt sich mit. Berührt er eine Hecke, muss er zurück zum Start.</p>
+      <p class="unterzeile">Der Ritter steht vor dem Eingang des Heckenlabyrinths. Gleich dahinter teilt sich der Weg in drei Pfade, aber nur einer führt zur Burg in der Mitte. Wische irgendwo auf dem Spielfeld, der Ritter bewegt sich mit. Berührt er eine Hecke, muss er zurück zum Start.</p>
     </header>
     <div class="werte"><span>Versuch: <b id="versuch">1</b></span><span>Ziel: Burg in der Mitte</span></div>
     <div class="feld" id="feld"><canvas id="leinwand"></canvas></div>
@@ -38,9 +38,9 @@
   <script src="../js/fortschritt.js"></script>
   <script>
     (function () {
-      var N = 9;               // Labyrinth hat N x N Felder
-      var HOF = [3, 5];        // Burghof: Felder 3 bis 5 in beiden Richtungen
-      var RAND = 1;            // freier Weg außen herum, in Feldern
+      var N = 11;              // Labyrinth hat N x N Felder, darunter ein Streifen vor dem Eingang
+      var HOF = [4, 6];        // Burghof: Felder 4 bis 6 in beiden Richtungen
+      var EX = 5;              // Spalte des Eingangs (unten in der Mitte)
       var feld = document.getElementById("feld");
       var leinwand = document.getElementById("leinwand");
       var g = leinwand.getContext("2d");
@@ -59,10 +59,6 @@
       function imHof(x, y) { return x >= HOF[0] && x <= HOF[1] && y >= HOF[0] && y <= HOF[1]; }
       function id(x, y) { return y * N + x; }
       function kante(a, b) { return a < b ? a + "-" + b : b + "-" + a; }
-      function mischen(a) {
-        for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
-        return a;
-      }
       function nachbarn(z) {
         var x = z % N, y = Math.floor(z / N), n = [];
         if (x > 0) n.push(z - 1);
@@ -72,42 +68,27 @@
         return n.filter(function (w) { return !imHof(w % N, Math.floor(w / N)); });
       }
 
-      // Feld am Außenrand einer Seite, ohne Ecken
-      function randFeld(seite, i) {
-        if (seite === "oben") return id(i, 0);
-        if (seite === "unten") return id(i, N - 1);
-        if (seite === "links") return id(0, i);
-        return id(N - 1, i);
-      }
-
-      // Drei getrennte Bereiche wachsen gleichzeitig: Bereich 0 hängt am Burghof,
-      // die Bereiche 1 und 2 beginnen an den falschen Eingängen und enden als Sackgassen.
+      // Hinter dem Eingang liegt eine Kreuzung mit drei Pfaden (links, geradeaus, rechts).
+      // Von jedem Pfad wächst ein eigener, abgetrennter Bereich. Nur einer davon bekommt
+      // den Zugang zum Burghof, die anderen beiden enden in Sackgassen.
       function erzeugen() {
-        for (var versuche = 0; versuche < 200; versuche++) {
-          var seiten = mischen(["oben", "unten", "links", "rechts"]).slice(0, 3);
-          var hofTore = [[4, 2, 4, 3], [4, 6, 4, 5], [2, 4, 3, 4], [6, 4, 5, 4]];
-          var tor = hofTore[Math.floor(Math.random() * 4)];
-          var vorHof = id(tor[0], tor[1]), hofFeld = id(tor[2], tor[3]);
-
+        var eingang = id(EX, N - 1);
+        var pfade = [id(EX - 1, N - 1), id(EX, N - 2), id(EX + 1, N - 1)];
+        for (var versuche = 0; versuche < 300; versuche++) {
           var bereich = new Array(N * N).fill(-1), offen = {};
-          var aktiv = [[vorHof], [], []];
-          var falscheTore = [];
-          bereich[vorHof] = 0;
-          for (var b = 1; b <= 2; b++) {
-            var start = randFeld(seiten[b], 1 + Math.floor(Math.random() * (N - 2)));
-            if (bereich[start] >= 0) break;
-            bereich[start] = b;
-            aktiv[b].push(start);
-            falscheTore.push({ seite: seiten[b], feld: start });
-          }
-          if (falscheTore.length < 2) continue;
+          bereich[eingang] = 9;
+          var aktiv = pfade.map(function (p, b) {
+            bereich[p] = b;
+            offen[kante(eingang, p)] = true;
+            return [p];
+          });
 
           var laeuft = true;
           while (laeuft) {
             laeuft = false;
-            for (b = 0; b < 3; b++) {
+            for (var b = 0; b < 3; b++) {
               while (aktiv[b].length) {
-                var k = Math.random() < 0.7 ? aktiv[b].length - 1 : Math.floor(Math.random() * aktiv[b].length);
+                var k = Math.random() < 0.75 ? aktiv[b].length - 1 : Math.floor(Math.random() * aktiv[b].length);
                 var z = aktiv[b][k];
                 var frei = nachbarn(z).filter(function (w) { return bereich[w] < 0; });
                 if (!frei.length) { aktiv[b].splice(k, 1); continue; }
@@ -121,52 +102,52 @@
             }
           }
 
-          // Richtiger Eingang: ein Randfeld von Bereich 0 auf der dritten Seite
-          var kandidaten = [];
-          for (var i = 1; i < N - 1; i++) {
-            var r = randFeld(seiten[0], i);
-            if (bereich[r] === 0) kandidaten.push(r);
+          // Mögliche Zugänge zum Burghof: Feld außen am Hof und das Hoffeld daneben
+          var zugaenge = [[], [], []];
+          for (var i = HOF[0]; i <= HOF[1]; i++) {
+            [[i, HOF[0] - 1, i, HOF[0]], [i, HOF[1] + 1, i, HOF[1]], [HOF[0] - 1, i, HOF[0], i], [HOF[1] + 1, i, HOF[1], i]].forEach(function (t) {
+              var aussen = id(t[0], t[1]);
+              if (bereich[aussen] >= 0 && bereich[aussen] < 3) zugaenge[bereich[aussen]].push([aussen, id(t[2], t[3])]);
+            });
           }
           var groesse = [0, 0, 0];
-          bereich.forEach(function (v) { if (v >= 0) groesse[v]++; });
-          if (!kandidaten.length || groesse[1] < 10 || groesse[2] < 10) continue;
+          bereich.forEach(function (v) { if (v >= 0 && v < 3) groesse[v]++; });
+          if (Math.min.apply(null, groesse) < 20) continue;
+          var moeglich = [0, 1, 2].filter(function (b) { return zugaenge[b].length; });
+          if (!moeglich.length) continue;
 
-          offen[kante(vorHof, hofFeld)] = true;
-          return {
-            offen: offen,
-            tore: [{ seite: seiten[0], feld: kandidaten[Math.floor(Math.random() * kandidaten.length)], richtig: true }]
-              .concat(falscheTore.map(function (t) { return { seite: t.seite, feld: t.feld, richtig: false }; }))
-          };
+          var richtig = moeglich[Math.floor(Math.random() * moeglich.length)];
+          var tor = zugaenge[richtig][Math.floor(Math.random() * zugaenge[richtig].length)];
+          offen[kante(tor[0], tor[1])] = true;
+          return { offen: offen, richtig: richtig };
         }
         return null;
       }
 
-      var plan, zelle, breite, waende, ritter, radius, versuch = 1, fertig = false, sperre = false;
+      var plan, zelle, breite, hoehe, waende, ritter, radius, versuch = 1, fertig = false, sperre = false;
 
       function vermessen() {
         var dpr = window.devicePixelRatio || 1;
         breite = feld.clientWidth;
-        zelle = breite / (N + 2 * RAND);
+        zelle = breite / N;
+        hoehe = zelle * (N + 1);
         leinwand.width = Math.round(breite * dpr);
-        leinwand.height = Math.round(breite * dpr);
-        leinwand.style.height = breite + "px";
+        leinwand.height = Math.round(hoehe * dpr);
+        leinwand.style.height = hoehe + "px";
         g.setTransform(dpr, 0, 0, dpr, 0, 0);
         radius = zelle * 0.22;
 
-        var O = RAND * zelle;
-        function px(v) { return O + v * zelle; }
+        function px(v) { return v * zelle; }
         waende = [];
-        // Spielfeldrand, damit der Ritter nicht hinausläuft
-        waende.push([0, 0, breite, 0], [0, breite, breite, breite], [0, 0, 0, breite], [breite, 0, breite, breite]);
+        // Spielfeldrand, damit der Ritter nicht hinausläuft (wird nicht gezeichnet)
+        waende.push([0, 0, breite, 0], [0, hoehe, breite, hoehe], [0, 0, 0, hoehe], [breite, 0, breite, hoehe]);
 
-        // Außenmauer mit drei Lücken
-        var lueckeAn = {};
-        plan.tore.forEach(function (t) { lueckeAn[t.seite + t.feld] = true; });
+        // Außenmauer, unten mit der Lücke für den Eingang
         for (var i = 0; i < N; i++) {
-          if (!lueckeAn["oben" + randFeld("oben", i)]) waende.push([px(i), px(0), px(i + 1), px(0)]);
-          if (!lueckeAn["unten" + randFeld("unten", i)]) waende.push([px(i), px(N), px(i + 1), px(N)]);
-          if (!lueckeAn["links" + randFeld("links", i)]) waende.push([px(0), px(i), px(0), px(i + 1)]);
-          if (!lueckeAn["rechts" + randFeld("rechts", i)]) waende.push([px(N), px(i), px(N), px(i + 1)]);
+          waende.push([px(i), 0, px(i + 1), 0]);
+          waende.push([0, px(i), 0, px(i + 1)]);
+          waende.push([breite, px(i), breite, px(i + 1)]);
+          if (i !== EX) waende.push([px(i), px(N), px(i + 1), px(N)]);
         }
 
         // Hecken zwischen den Feldern
@@ -185,7 +166,9 @@
         }
       }
 
-      function start() { return { x: breite / 2, y: breite - RAND * zelle / 2 }; }
+      // Start: direkt vor dem Eingang, außerhalb der Hecke
+      function start() { return { x: (EX + 0.5) * zelle, y: (N + 0.5) * zelle }; }
+      function mitte() { return { x: breite / 2, y: (N * zelle) / 2 }; }
 
       function neu() {
         plan = erzeugen();
@@ -198,15 +181,15 @@
 
       function zeichnen() {
         if (!plan) return;
-        var O = RAND * zelle;
-        g.clearRect(0, 0, breite, breite);
-        // außen: Sandweg, innen: Wiese, Mitte: Burghof
+        var m = mitte();
+        g.clearRect(0, 0, breite, hoehe);
+        // vor dem Eingang: Sandweg, innen: Wiese, Mitte: Burghof
         g.fillStyle = "#e3d3a8";
-        g.fillRect(0, 0, breite, breite);
+        g.fillRect(0, 0, breite, hoehe);
         g.fillStyle = "#cfeebc";
-        g.fillRect(O, O, N * zelle, N * zelle);
+        g.fillRect(0, 0, breite, N * zelle);
         g.fillStyle = "#d9d3c4";
-        g.fillRect(O + HOF[0] * zelle, O + HOF[0] * zelle, 3 * zelle, 3 * zelle);
+        g.fillRect(HOF[0] * zelle, HOF[0] * zelle, 3 * zelle, 3 * zelle);
 
         g.lineCap = "round";
         g.strokeStyle = "#2f7d3a";
@@ -218,11 +201,12 @@
         g.lineWidth = Math.max(2, zelle * 0.06);
         g.stroke();
 
-        var bs = zelle * 2.5;
-        if (burgBild.complete) g.drawImage(burgBild, breite / 2 - bs / 2, breite / 2 - bs / 2, bs, bs);
-        var rs = radius * 3.4;
+        var bs = zelle * 2.6;
+        if (burgBild.complete) g.drawImage(burgBild, m.x - bs / 2, m.y - bs / 2, bs, bs);
+        var rs = radius * 3.6;
         if (ritterBild.complete) g.drawImage(ritterBild, ritter.x - rs / 2, ritter.y - rs / 2 - radius * 0.3, rs, rs);
       }
+
 
       function abstand(px, py, w) {
         var dx = w[2] - w[0], dy = w[3] - w[1];
@@ -244,7 +228,8 @@
           if (trifftHecke(nx, ny)) return autsch();
           ritter.x = nx; ritter.y = ny;
         }
-        if (Math.hypot(ritter.x - breite / 2, ritter.y - breite / 2) < zelle * 0.8) {
+        var m = mitte();
+        if (Math.hypot(ritter.x - m.x, ritter.y - m.y) < zelle * 0.8) {
           fertig = true;
           zeichnen();
           meldung.textContent = "Der Ritter ist an der Burg angekommen!";
