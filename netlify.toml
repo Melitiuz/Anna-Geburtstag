@@ -1,0 +1,8 @@
+[build]
+  # Nur der Ordner "site" wird veröffentlicht. Werkzeuge und Notizen bleiben privat im Repository.
+  publish = "site"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Schiebepuzzle</title>
+  <link rel="stylesheet" href="../css/stil.css">
+  <style>
+    .brett {
+      position: relative; width: min(100%, 360px); aspect-ratio: 1; margin: 0 auto;
+      background: var(--rand); border-radius: var(--radius); padding: 6px;
+      touch-action: manipulation; user-select: none; -webkit-user-select: none;
+    }
+    .stein {
+      position: absolute; width: calc((100% - 12px) / 3); height: calc((100% - 12px) / 3);
+      left: 6px; top: 6px; padding: 4px; border: none; background: none; cursor: pointer;
+      transition: transform 0.15s ease-out;
+    }
+    .stein span {
+      display: grid; place-items: center; width: 100%; height: 100%;
+      border-radius: 12px; background: #fff; box-shadow: 0 4px 0 #e3c6b2;
+      font-size: clamp(1.8rem, 10vw, 2.6rem); font-weight: 800; color: var(--akzent);
+    }
+    .stein.passt span { color: var(--gruen); }
+    .werte { text-align: center; font-weight: 600; color: var(--text-leise); margin-bottom: 12px; }
+    .ziel { display: grid; grid-template-columns: repeat(3, 18px); gap: 2px; justify-content: center; margin-top: 8px; font-size: 0.7rem; font-weight: 700; color: var(--text-leise); }
+  </style>
+</head>
+<body>
+  <main class="seite">
+    <a class="zurueck" href="../index.html">‹ Übersicht</a>
+    <header class="kopf">
+      <h1>🧩 Schiebepuzzle</h1>
+      <p class="unterzeile">Tippe auf einen Stein neben der Lücke, um ihn zu verschieben. Ordne die Zahlen von 1 bis 8, die Lücke kommt nach unten rechts.</p>
+    </header>
+    <div class="werte">Züge: <b id="zuege">0</b></div>
+    <div class="brett" id="brett"></div>
+    <p class="mitte" style="margin-top:20px"><button class="knopf zweit" id="neu" type="button">Neu mischen</button></p>
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/fortschritt.js"></script>
+  <script>
+    (function () {
+      var N = 3;
+      var brett = document.getElementById("brett");
+      var zuegeEl = document.getElementById("zuege");
+      var lage, steine, zuege, fertig;
+
+      function nachbarn(p) {
+        var r = Math.floor(p / N), c = p % N, n = [];
+        if (r > 0) n.push(p - N);
+        if (r < N - 1) n.push(p + N);
+        if (c > 0) n.push(p - 1);
+        if (c < N - 1) n.push(p + 1);
+        return n;
+      }
+
+      function start() {
+        // lage[feld] = Nummer des Steins, 0 ist die Lücke. Mischen durch echte Züge, damit es lösbar bleibt.
+        lage = [1, 2, 3, 4, 5, 6, 7, 8, 0];
+        var luecke = 8, vorher = -1;
+        for (var i = 0; i < 200 || geloest(); i++) {
+          var m = nachbarn(luecke).filter(function (p) { return p !== vorher; });
+          var p = m[Math.floor(Math.random() * m.length)];
+          lage[luecke] = lage[p]; lage[p] = 0;
+          vorher = luecke; luecke = p;
+        }
+        zuege = 0; fertig = false;
+        zuegeEl.textContent = 0;
+        brett.innerHTML = "";
+        steine = {};
+        for (var z = 1; z < N * N; z++) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.className = "stein";
+          b.dataset.zahl = z;
+          b.innerHTML = "<span>" + z + "</span>";
+          brett.appendChild(b);
+          steine[z] = b;
+        }
+        zeichnen();
+      }
+
+      function geloest() {
+        for (var i = 0; i < N * N - 1; i++) if (lage[i] !== i + 1) return false;
+        return true;
+      }
+
+      function zeichnen() {
+        lage.forEach(function (z, p) {
+          if (!z) return;
+          var b = steine[z];
+          b.style.transform = "translate(" + (p % N) * 100 + "%, " + Math.floor(p / N) * 100 + "%)";
+          b.classList.toggle("passt", z === p + 1);
+          b.setAttribute("aria-label", "Stein " + z);
+        });
+      }
+
+      brett.addEventListener("click", function (e) {
+        var b = e.target.closest(".stein");
+        if (!b || fertig) return;
+        var p = lage.indexOf(Number(b.dataset.zahl));
+        var luecke = lage.indexOf(0);
+        var rp = Math.floor(p / N), cp = p % N, rl = Math.floor(luecke / N), cl = luecke % N;
+        if (rp !== rl && cp !== cl) return;
+        // Ganze Reihe oder Spalte bis zur Lücke nachschieben
+        var schritt = rp === rl ? (cp < cl ? -1 : 1) : (rp < rl ? -N : N);
+        while (luecke !== p) {
+          lage[luecke] = lage[luecke + schritt];
+          lage[luecke + schritt] = 0;
+          luecke += schritt;
+        }
+        zuege++;
+        zuegeEl.textContent = zuege;
+        zeichnen();
+        if (geloest()) {
+          fertig = true;
+          setTimeout(function () { Fortschritt.gewinnen("schiebe"); }, 400);
+        }
+      });
+
+      document.getElementById("neu").addEventListener("click", start);
+      start();
+    })();
+  </script>
+</body>
+</html>

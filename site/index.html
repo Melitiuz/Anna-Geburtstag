@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Alles Gute!</title>
+  <link rel="stylesheet" href="css/stil.css">
+</head>
+<body>
+  <main class="seite">
+    <header class="kopf">
+      <div style="font-size:3rem" aria-hidden="true">🎂</div>
+      <h1>Alles Gute, <span id="name"></span>!</h1>
+      <p class="unterzeile">Dein Geschenk ist gut versteckt. Gewinne alle vier Spiele und sammle die vier Teile eines QR Codes. Zusammengesetzt verraten sie dir, wo es auf dich wartet.</p>
+      <div class="fortschritt" id="fortschritt" aria-label="Fortschritt"></div>
+    </header>
+
+    <section class="spiele" id="spiele"></section>
+
+    <section class="karte mitte" id="sammlung" hidden style="margin-top:24px">
+      <h2>Deine Viertel</h2>
+      <p class="leise" id="sammlung-text"></p>
+      <div class="puzzle offen" id="puzzle"></div>
+      <p id="fertig-text" hidden><strong>Perfekt zusammengesetzt!</strong> Scanne den Code jetzt mit der Kamera eines zweiten Handys.</p>
+    </section>
+
+    <footer class="fuss">
+      <button type="button" id="reset">Fortschritt zurücksetzen</button>
+    </footer>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/fortschritt.js"></script>
+  <script>
+    (function () {
+      var F = window.Fortschritt;
+      document.getElementById("name").textContent = window.GEBURTSTAG.name;
+
+      // Fortschrittsanzeige und Spieleliste
+      var leiste = document.getElementById("fortschritt");
+      var liste = document.getElementById("spiele");
+      F.SPIELE.forEach(function (s) {
+        var ok = F.gewonnen(s.id);
+        var punkt = document.createElement("span");
+        punkt.textContent = ok ? "✓" : "";
+        if (ok) punkt.className = "an";
+        leiste.appendChild(punkt);
+
+        var a = document.createElement("a");
+        a.className = "spiel-link" + (ok ? " geschafft" : "");
+        a.href = s.datei;
+        a.innerHTML =
+          '<div class="symbol" aria-hidden="true">' + s.symbol + "</div>" +
+          '<div class="info"><div class="titel">' + s.titel + '</div><div class="status">' +
+          (ok ? "Geschafft, Viertel gesammelt" : s.text) + "</div></div>" +
+          '<div class="pfeil" aria-hidden="true">›</div>';
+        liste.appendChild(a);
+      });
+
+      // Sammlung: gewonnene Viertel in zufälliger Anordnung, Tippen tauscht zwei Felder
+      var anzahl = F.anzahlGewonnen();
+      if (anzahl > 0) {
+        var bereich = document.getElementById("sammlung");
+        var puzzle = document.getElementById("puzzle");
+        var text = document.getElementById("sammlung-text");
+        bereich.hidden = false;
+        text.textContent = anzahl < 4
+          ? anzahl + " von 4 Vierteln gesammelt. Spiel weiter, um den Rest zu bekommen."
+          : "Alle vier Viertel sind da! Tippe nacheinander zwei Teile an, um sie zu tauschen. Die Markierungen an den Ecken helfen dir.";
+
+        var teile = [0, 1, 2, 3];
+        do {
+          for (var i = teile.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var t = teile[i]; teile[i] = teile[j]; teile[j] = t;
+          }
+        } while (anzahl === 4 && teile.join() === "0,1,2,3");
+
+        var besitz = {};
+        F.SPIELE.forEach(function (s) { if (F.gewonnen(s.id)) besitz[s.teil] = true; });
+
+        var felder = teile.map(function (teil) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.dataset.teil = teil;
+          if (besitz[teil]) {
+            b.appendChild(F.viertelBild(teil));
+          } else {
+            b.innerHTML = '<div style="display:grid;place-items:center;height:100%;font-size:2.4rem;color:#d8bfae;background:#fbf1e8">?</div>';
+            b.disabled = true;
+          }
+          puzzle.appendChild(b);
+          return b;
+        });
+
+        var gewaehlt = null;
+        puzzle.addEventListener("click", function (e) {
+          var b = e.target.closest("button");
+          if (!b || b.disabled || anzahl < 4) return;
+          if (!gewaehlt) { gewaehlt = b; b.classList.add("gewaehlt"); return; }
+          if (gewaehlt !== b) {
+            var halter = document.createElement("span");
+            puzzle.replaceChild(halter, gewaehlt);
+            puzzle.replaceChild(gewaehlt, b);
+            puzzle.replaceChild(b, halter);
+          }
+          gewaehlt.classList.remove("gewaehlt");
+          gewaehlt = null;
+          pruefen();
+        });
+
+        function pruefen() {
+          var reihenfolge = Array.prototype.map.call(puzzle.children, function (b) { return b.dataset.teil; }).join();
+          var fertig = anzahl === 4 && reihenfolge === "0,1,2,3";
+          puzzle.classList.toggle("offen", !fertig);
+          document.getElementById("fertig-text").hidden = !fertig;
+          if (fertig) F.konfetti();
+        }
+      }
+
+      document.getElementById("reset").addEventListener("click", function () {
+        if (confirm("Wirklich den ganzen Fortschritt löschen?")) {
+          F.zuruecksetzen();
+          location.reload();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

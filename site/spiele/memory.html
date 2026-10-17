@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Memory</title>
+  <link rel="stylesheet" href="../css/stil.css">
+  <style>
+    .feld { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; perspective: 800px; touch-action: manipulation; }
+    .kachel { position: relative; aspect-ratio: 1; border: none; padding: 0; background: none; cursor: pointer; }
+    .kachel .innen { position: absolute; inset: 0; transition: transform 0.35s; transform-style: preserve-3d; }
+    .kachel.offen .innen, .kachel.fertig .innen { transform: rotateY(180deg); }
+    .kachel .vorne, .kachel .hinten {
+      position: absolute; inset: 0; border-radius: 14px;
+      display: grid; place-items: center;
+      backface-visibility: hidden; -webkit-backface-visibility: hidden;
+      box-shadow: var(--schatten);
+    }
+    .kachel .hinten { background: linear-gradient(135deg, var(--akzent), var(--akzent-3)); color: #fff; font-size: 1.6rem; }
+    .kachel .vorne { background: #fff; transform: rotateY(180deg); font-size: clamp(1.8rem, 9vw, 2.6rem); }
+    .kachel.fertig .vorne { background: #e6f7ee; }
+    .werte { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: 600; color: var(--text-leise); }
+  </style>
+</head>
+<body>
+  <main class="seite">
+    <a class="zurueck" href="../index.html">‹ Übersicht</a>
+    <header class="kopf">
+      <h1>🃏 Memory</h1>
+      <p class="unterzeile">Decke immer zwei Karten auf und finde alle Paare.</p>
+    </header>
+    <div class="werte"><span>Züge: <b id="zuege">0</b></span><span>Paare: <b id="paare">0</b> / 8</span></div>
+    <div class="feld" id="feld"></div>
+    <p class="mitte" style="margin-top:20px"><button class="knopf zweit" id="neu" type="button">Neu mischen</button></p>
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/fortschritt.js"></script>
+  <script>
+    (function () {
+      var SYMBOLE = ["🎂", "🎁", "🎈", "🎉", "🥳", "🍰", "🕯️", "🎀"];
+      var feld = document.getElementById("feld");
+      var zuegeEl = document.getElementById("zuege");
+      var paareEl = document.getElementById("paare");
+      var offen, zuege, paare, sperre;
+
+      function mischen(a) {
+        for (var i = a.length - 1; i > 0; i--) {
+          var j = Math.floor(Math.random() * (i + 1));
+          var t = a[i]; a[i] = a[j]; a[j] = t;
+        }
+        return a;
+      }
+
+      function start() {
+        offen = []; zuege = 0; paare = 0; sperre = false;
+        zuegeEl.textContent = 0; paareEl.textContent = 0;
+        feld.innerHTML = "";
+        mischen(SYMBOLE.concat(SYMBOLE)).forEach(function (s) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.className = "kachel";
+          b.dataset.symbol = s;
+          b.setAttribute("aria-label", "Verdeckte Karte");
+          b.innerHTML = '<div class="innen"><div class="hinten">?</div><div class="vorne">' + s + "</div></div>";
+          feld.appendChild(b);
+        });
+      }
+
+      feld.addEventListener("click", function (e) {
+        var k = e.target.closest(".kachel");
+        if (!k || sperre || k.classList.contains("offen") || k.classList.contains("fertig")) return;
+        k.classList.add("offen");
+        offen.push(k);
+        if (offen.length < 2) return;
+
+        zuege++;
+        zuegeEl.textContent = zuege;
+        var a = offen[0], b = offen[1];
+        offen = [];
+        if (a.dataset.symbol === b.dataset.symbol) {
+          a.classList.replace("offen", "fertig");
+          b.classList.replace("offen", "fertig");
+          paare++;
+          paareEl.textContent = paare;
+          if (paare === SYMBOLE.length) setTimeout(function () { Fortschritt.gewinnen("memory"); }, 500);
+        } else {
+          sperre = true;
+          setTimeout(function () {
+            a.classList.remove("offen");
+            b.classList.remove("offen");
+            sperre = false;
+          }, 800);
+        }
+      });
+
+      document.getElementById("neu").addEventListener("click", start);
+      start();
+    })();
+  </script>
+</body>
+</html>
