@@ -16,6 +16,7 @@
     .buehne canvas { display: block; width: 100%; touch-action: none; }
     #meldung { min-height: 1.5em; font-weight: 600; text-align: center; margin-top: 12px; }
     .steuerung { display: grid; grid-template-columns: 1fr; gap: 8px; margin-top: 12px; }
+    .steuerung .knopf { min-height: 64px; font-size: 1.4rem; touch-action: none; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
   </style>
 </head>
 <body>
@@ -148,7 +149,7 @@
 
       function druecken() {
         gedrueckt = true;
-        if (phase === "bereit") { phase = "laeuft"; knopf.hidden = true; letzteZeit = performance.now(); requestAnimationFrame(schleife); return; }
+        if (phase === "bereit") { phase = "laeuft"; knopf.textContent = "Springen"; letzteZeit = performance.now(); requestAnimationFrame(schleife); return; }
         if (phase !== "laeuft") return;
         if (reiter.amBoden) absprung();
         else sprungPuffer = 0.12; // kurz vor der Landung gedrückt: springt sofort nach dem Aufsetzen
@@ -167,7 +168,17 @@
       document.addEventListener("keyup", function (e) {
         if (e.code === "Space" || e.code === "ArrowUp") { e.preventDefault(); loslassen(); }
       });
-      knopf.addEventListener("click", function () {
+      // Der Knopf unter dem Spielfeld: vor dem Start "Losreiten", während des Ritts "Springen"
+      // (kurz drücken = kleiner Sprung, halten = hoher Sprung), nach einer Niederlage "Noch einmal"
+      knopf.addEventListener("pointerdown", function (e) {
+        e.preventDefault();
+        if (phase === "gescheitert") neu();
+        druecken();
+      });
+      knopf.addEventListener("contextmenu", function (e) { e.preventDefault(); });
+      knopf.addEventListener("click", function (e) {
+        // Nur für Tastaturbedienung (Enter), Maus und Finger laufen über pointerdown
+        if (e.detail !== 0) return;
         if (phase === "gescheitert") neu();
         druecken();
         loslassen();
@@ -241,7 +252,7 @@
           });
           if (kamera >= grabenX - GRABEN_SCHIRM) {
             kamera = grabenX - GRABEN_SCHIRM;
-            if (reiter.amBoden) { phase = "ankunft"; meldung.textContent = "Der Burggraben! Jetzt wird gebaut."; }
+            if (reiter.amBoden) { phase = "ankunft"; knopf.hidden = true; meldung.textContent = "Der Burggraben! Jetzt wird gebaut."; }
           }
         } else if (phase === "ankunft") {
           reiter.x = Math.min(reiter.x + 90 * dt, GRABEN_SCHIRM - 54);

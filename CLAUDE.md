@@ -35,7 +35,8 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
   - Brückenritt (Geschicklichkeit): Seitwärts-Laufspiel, der Ritter reitet automatisch. Kurz tippen = kleiner Sprung,
     gedrückt halten = hoher Sprung. Hindernisse: Steine, Doppelsteine, entgegenlaufende Wölfe und Wolfspaare, hohe
     Hecken (nur hoher Sprung), tief hängende Äste (nicht springen), Stein direkt vor Ast. Auf der Seite stehen bewusst keine
-    Steuerungstipps. 30 Hölzer am Boden, niedrig, hoch, in Bögen, über Hecken und unter Ästen.
+    Steuerungstipps. Springen per Tippen aufs Spielfeld oder über den großen Knopf darunter (Losreiten, Springen, Noch
+    einmal). 30 Hölzer am Boden, niedrig, hoch, in Bögen, über Hecken und unter Ästen.
     Jeder Zusammenstoß kostet 4 Hölzer. Am Ende ein Burggraben: mindestens 20 Hölzer (2/3) ergeben die Brücke zur Burg.
     Strecke aus zufälligen Mustern, Tempo steigt von 220 auf 340, dichte Abstände. Mit ?test in der Adresse gibt es einen Testzugang
     (window.spielTest) für automatische Durchläufe
