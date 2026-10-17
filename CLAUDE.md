@@ -19,10 +19,10 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
 - `site/spiele/` : mastermind.html, quiz.html, schiebepuzzle.html, labyrinth.html
   - Obst-Mastermind: Code aus 5 Früchten (Apfel, Birne, Kirsche, Aprikose, Zwetschge, Zitrone, Wiederholung erlaubt),
     7 Versuche, nach "Einloggen" nur Anzahlen: grün = richtiger Platz, gelb = falscher Platz, rot = falsch
-  - Ritter-Labyrinth: 11 x 11 Felder, Burghof (3 x 3) in der Mitte mit einem Zugang. Ein Eingang unten in der Mitte,
-    der Ritter startet direkt davor. Gleich hinter dem Eingang eine Kreuzung mit drei Pfaden (links, geradeaus, rechts),
-    nur einer führt zur Burg, die anderen in getrennte Sackgassen-Bereiche. Bei jedem neuen Labyrinth zufällig erzeugt;
-    Heckenberührung schickt den Ritter zurück zum Start
+  - Ritter-Labyrinth: 11 x 11 Felder, Burghof (3 x 3) in der Mitte mit genau einem Zugang. Ein Eingang unten in der Mitte,
+    der Ritter startet direkt davor. Ein durchgehendes Labyrinth (Tiefensuche) mit Abzweigungen und Sackgassen; der Weg
+    zur Burg muss mindestens 2/3 aller Felder durchqueren (MIN_ANTEIL, mindestens 75 von 112), sonst wird neu gewürfelt.
+    Jede Heckenberührung erzeugt ein neues Labyrinth und der Ritter beginnt wieder vor dem Eingang
   - Royals-Quiz: Pool von 50 Fragen (Großbritannien inkl. erweiterter Familie, Japan, weitere europäische Königshäuser,
     10 "Wer ist das?"-Fragen mit Foto) in config.js. Pro Runde 10 zufällige ohne Wiederholung aus der vorigen Runde,
     Antworten gemischt (erste Antwort im Pool ist die richtige). Keine Rückmeldung pro Frage, am Ende nur "Toll"
