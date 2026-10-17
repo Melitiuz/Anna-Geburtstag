@@ -23,13 +23,16 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
     der Ritter startet direkt davor. Gleich hinter dem Eingang eine Kreuzung mit drei Pfaden (links, geradeaus, rechts),
     nur einer führt zur Burg, die anderen in getrennte Sackgassen-Bereiche. Bei jedem neuen Labyrinth zufällig erzeugt;
     Heckenberührung schickt den Ritter zurück zum Start
+  - Royals-Quiz: Pool von 20 Fragen (Royals, auch Japan) in config.js, pro Runde 5 zufällige ohne Wiederholung aus der
+    vorigen Runde, Antworten gemischt (erste Antwort im Pool ist die richtige). Keine Rückmeldung pro Frage, am Ende
+    nur "Toll, alles richtig" (Quest gelöst) oder "Pech gehabt, nächstes Mal mehr Glück"
 - `site/js/config.js` : Name der beschenkten Person, Nachricht im Popup (Text, Link, Gruß), Lösung (Platz und Variante je Figur) und Quizfragen
 - `site/js/motive.js` : die vier Figuren mit ihren Varianten als SVG, Hinweistexte und die Felder des 2 x 2 Rasters
 - `site/js/fortschritt.js` : Speichern des Fortschritts, Zuordnung Spiel zu Motiv, Gewinn-Overlay, Konfetti
 - `werkzeuge/server.ps1` : Testserver ohne Python/Node (`powershell -ExecutionPolicy Bypass -File werkzeuge\server.ps1`, dann http://localhost:8080)
   - mit `-Netz` auch im WLAN erreichbar, z. B. vom Handy unter http://192.168.178.26:8080/ (Firewall-Freigabe für private Netzwerke nötig)
 
-Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Quiz → Prinzessin, Schiebepuzzle → Burg, Ritter-Labyrinth → Ritter.
+Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Royals-Quiz → Prinzessin, Schiebepuzzle → Burg, Ritter-Labyrinth → Ritter.
 
 ## Technik
 - Rein statische Website: HTML, CSS und JavaScript, kein Server, keine Datenbank
@@ -61,6 +64,6 @@ Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Quiz → Prinzessin, Schiebe
 - [x] Name der beschenkten Person: Anna
 - [x] Geschenk-Link: https://www.bodaborg.de/bochum/
 - [ ] Nachricht zum Geschenk (Text folgt)
-- [x] Spiele: Obst-Mastermind, Quiz, Schiebepuzzle, Ritter-Labyrinth (Geschicklichkeit)
-- [ ] Quizfragen über Anna
+- [x] Spiele: Obst-Mastermind, Royals-Quiz, Schiebepuzzle, Ritter-Labyrinth (Geschicklichkeit)
+- [x] Quizfragen: 20 Fragen zum Thema Royals (auch Japan)
 - [ ] Veröffentlichen (später, voraussichtlich GitHub Pages)

@@ -4,7 +4,7 @@
 
   var SPIELE = [
     { id: "mastermind", titel: "Obst-Mastermind", symbol: "🍎", datei: "spiele/mastermind.html", text: "Knacke den Obst-Code", motiv: "baum" },
-    { id: "quiz", titel: "Quiz", symbol: "❓", datei: "spiele/quiz.html", text: "Wie gut kennst du dich aus?", motiv: "prinzessin" },
+    { id: "quiz", titel: "Royals-Quiz", symbol: "👑", datei: "spiele/quiz.html", text: "Wie gut kennst du die Königshäuser?", motiv: "prinzessin" },
     { id: "schiebe", titel: "Schiebepuzzle", symbol: "🧩", datei: "spiele/schiebepuzzle.html", text: "Bring die Zahlen in Ordnung", motiv: "burg" },
     { id: "labyrinth", titel: "Ritter-Labyrinth", symbol: "🏰", datei: "spiele/labyrinth.html", text: "Führe den Ritter zur Burg", motiv: "ritter" }
   ];

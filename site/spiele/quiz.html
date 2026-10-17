@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="robots" content="noindex, nofollow">
-  <title>Quiz</title>
+  <title>Royals-Quiz</title>
   <link rel="stylesheet" href="../css/stil.css">
   <style>
     .antworten { display: grid; gap: 10px; margin-top: 16px; }
@@ -14,8 +14,7 @@
       font: inherit; font-size: 1rem; font-weight: 600; color: var(--text); cursor: pointer;
       touch-action: manipulation;
     }
-    .antwort.richtig { background: rgba(53, 196, 111, 0.22); border-color: var(--gruen); }
-    .antwort.falsch { background: rgba(214, 43, 43, 0.25); border-color: var(--akzent); }
+    .antwort.gewaehlt { background: rgba(255, 255, 255, 0.18); border-color: #fff; }
     .balken { height: 8px; background: var(--rand); border-radius: 99px; overflow: hidden; margin-bottom: 16px; }
     .balken div { height: 100%; background: var(--akzent-2); width: 0; transition: width 0.3s; }
     .nummer { color: var(--akzent); font-family: var(--schrift-schmal); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; }
@@ -25,7 +24,7 @@
   <main class="seite">
     <a class="zurueck" href="../index.html">‹ Übersicht</a>
     <header class="kopf">
-      <h1>❓ Quiz</h1>
+      <h1>👑 Royals-Quiz</h1>
       <p class="unterzeile" id="regel"></p>
     </header>
     <div class="balken"><div id="balken"></div></div>
@@ -38,52 +37,74 @@
   <script>
     (function () {
       var Q = window.GEBURTSTAG.quiz;
+      var ANZAHL = Math.min(Q.fragenProRunde || 5, Q.fragen.length);
+      var LETZTE = "gb-quiz-letzte-runde";
       var karte = document.getElementById("karte");
       var balken = document.getElementById("balken");
-      var nr, punkte;
+      var runde, nr, punkte;
 
       document.getElementById("regel").textContent =
-        "Beantworte " + Q.fragen.length + " Fragen. Mindestens " + Q.mindestensRichtig + " müssen richtig sein.";
+        "Beantworte " + ANZAHL + " Fragen rund um die Königshäuser der Welt. Ob eine Antwort stimmt, erfährst du erst am Ende. Nur wenn alle richtig sind, ist die Quest gelöst.";
 
-      function start() { nr = 0; punkte = 0; frage(); }
+      function mischen(a) {
+        for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var t = a[i]; a[i] = a[j]; a[j] = t; }
+        return a;
+      }
+
+      function letzteLaden() {
+        try { return JSON.parse(localStorage.getItem(LETZTE)) || []; } catch (e) { return []; }
+      }
+
+      // Neue Runde: Fragen aus der vorigen Runde kommen nicht wieder dran (solange genug übrig sind)
+      function start() {
+        var alle = Q.fragen.map(function (f, i) { return i; });
+        var letzte = letzteLaden();
+        var neu = mischen(alle.filter(function (i) { return letzte.indexOf(i) < 0; }));
+        if (neu.length < ANZAHL) neu = neu.concat(mischen(alle.filter(function (i) { return neu.indexOf(i) < 0; })));
+        runde = neu.slice(0, ANZAHL);
+        try { localStorage.setItem(LETZTE, JSON.stringify(runde)); } catch (e) {}
+        nr = 0;
+        punkte = 0;
+        frage();
+      }
 
       function frage() {
-        balken.style.width = (nr / Q.fragen.length) * 100 + "%";
-        if (nr >= Q.fragen.length) return ende();
-        var f = Q.fragen[nr];
-        karte.innerHTML = '<div class="nummer">Frage ' + (nr + 1) + " von " + Q.fragen.length + "</div><h2></h2>" +
+        balken.style.width = (nr / ANZAHL) * 100 + "%";
+        if (nr >= ANZAHL) return ende();
+        var f = Q.fragen[runde[nr]];
+        karte.innerHTML = '<div class="nummer">Frage ' + (nr + 1) + " von " + ANZAHL + "</div><h2></h2>" +
           '<div class="antworten"></div>';
         karte.querySelector("h2").textContent = f.frage;
         var box = karte.querySelector(".antworten");
-        f.antworten.forEach(function (text, i) {
+        // Die erste Antwort im Pool ist die richtige, hier wird gemischt
+        mischen(f.antworten.map(function (text, i) { return { text: text, richtig: i === 0 }; })).forEach(function (a) {
           var b = document.createElement("button");
           b.type = "button";
           b.className = "antwort";
-          b.textContent = text;
-          b.addEventListener("click", function () { waehlen(i, b, box, f); });
+          b.textContent = a.text;
+          b.addEventListener("click", function () { waehlen(a.richtig, b, box); });
           box.appendChild(b);
         });
       }
 
-      function waehlen(i, b, box, f) {
+      // Keine Rückmeldung, ob die Antwort stimmt: nur kurz markieren und weiter
+      function waehlen(richtig, b, box) {
         if (box.dataset.fertig) return;
         box.dataset.fertig = "1";
-        if (i === f.richtig) {
-          punkte++;
-          b.classList.add("richtig");
-        } else {
-          b.classList.add("falsch");
-          box.children[f.richtig].classList.add("richtig");
-        }
-        setTimeout(function () { nr++; frage(); }, 1100);
+        if (richtig) punkte++;
+        b.classList.add("gewaehlt");
+        setTimeout(function () { nr++; frage(); }, 350);
       }
 
       function ende() {
-        var geschafft = punkte >= Q.mindestensRichtig;
-        karte.innerHTML = '<div class="mitte"><h2>' + punkte + " von " + Q.fragen.length + " richtig</h2><p>" +
-          (geschafft ? "Super gemacht!" : "Knapp daneben. Versuch es gleich noch einmal!") + "</p>" +
-          (geschafft ? "" : '<button class="knopf" type="button" id="nochmal">Noch einmal</button>') + "</div>";
-        if (geschafft) Fortschritt.gewinnen("quiz");
+        var geschafft = punkte === ANZAHL;
+        karte.innerHTML = '<div class="mitte">' +
+          (geschafft
+            ? '<div style="font-size:3rem" aria-hidden="true">👑</div><h2>Toll!</h2><p>Du hast alle Fragen richtig beantwortet. Eine wahre Kennerin der Königshäuser!</p>'
+            : '<div style="font-size:3rem" aria-hidden="true">🍀</div><h2>Pech gehabt!</h2><p>Leider war nicht alles richtig. Nächstes Mal mehr Glück!</p>' +
+              '<button class="knopf" type="button" id="nochmal">Noch einmal</button>') +
+          "</div>";
+        if (geschafft) setTimeout(function () { Fortschritt.gewinnen("quiz"); }, 900);
         else document.getElementById("nochmal").addEventListener("click", start);
       }
 
