@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Obst-Mastermind</title>
+  <link rel="stylesheet" href="../css/stil.css">
+  <style>
+    .legende { display: flex; flex-wrap: wrap; gap: 6px 14px; justify-content: center; font-size: 0.9rem; color: var(--text-leise); margin-bottom: 14px; }
+    .legende span { display: inline-flex; align-items: center; gap: 6px; }
+    .punkt { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
+    .punkt.gruen { background: var(--gruen); }
+    .punkt.gelb { background: var(--akzent-2); }
+    .punkt.rot { background: var(--akzent); }
+
+    .brett { display: grid; gap: 6px; padding: 8px; background: var(--karte); border: 3px solid var(--akzent); border-radius: var(--radius); }
+    .reihe {
+      display: grid; grid-template-columns: 22px repeat(5, 1fr) 92px; align-items: center; gap: 5px;
+      padding: 5px 6px; border-radius: 10px; background: var(--karte-2); border: 2px solid transparent;
+    }
+    .reihe.aktiv { border-color: var(--akzent); background: #241414; }
+    .reihe .nr { font-family: var(--schrift-schmal); font-weight: 700; color: var(--text-leise); text-align: center; }
+    .loch {
+      aspect-ratio: 1; border-radius: 50%; padding: 2px; border: none;
+      background: #0c0c0c; box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
+      display: grid; place-items: center; cursor: default;
+    }
+    .reihe.aktiv .loch { cursor: pointer; }
+    .loch svg { width: 100%; height: 100%; display: block; }
+    .wertung { display: flex; gap: 4px; justify-content: flex-end; }
+    .wertung span {
+      min-width: 26px; height: 26px; border-radius: 13px; padding: 0 6px;
+      display: grid; place-items: center; font-weight: 700; font-size: 0.9rem; color: #111;
+    }
+    .wertung .gruen { background: var(--gruen); }
+    .wertung .gelb { background: var(--akzent-2); }
+    .wertung .rot { background: var(--akzent); color: #fff; }
+
+    .obstleiste { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; margin: 14px 0 10px; }
+    .frucht-knopf {
+      border: 2px solid var(--rand); border-radius: 10px; background: #f4f4f4; padding: 4px 0 2px;
+      cursor: pointer; touch-action: manipulation; display: grid; justify-items: center;
+    }
+    .frucht-knopf:active { transform: scale(0.94); border-color: var(--akzent); }
+    .frucht-knopf svg { width: 100%; max-width: 44px; aspect-ratio: 1; display: block; }
+    .frucht-knopf small { font-size: 0.56rem; letter-spacing: -0.02em; color: #333; font-weight: 700; line-height: 1.3; max-width: 100%; overflow: hidden; }
+    .aktionen { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
+    .loesung { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; max-width: 260px; margin: 10px auto; }
+    .loesung .loch { background: #f4f4f4; box-shadow: none; }
+    #meldung { min-height: 1.5em; font-weight: 600; text-align: center; margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <main class="seite">
+    <a class="zurueck" href="../index.html">‹ Übersicht</a>
+    <header class="kopf">
+      <h1>🍎 Obst-Mastermind</h1>
+      <p class="unterzeile">Errate den geheimen Obst-Code aus 5 Früchten. Jede Sorte kann mehrfach vorkommen. Du hast 8 Versuche.</p>
+    </header>
+    <div class="legende">
+      <span><i class="punkt gruen"></i>richtig und am richtigen Platz</span>
+      <span><i class="punkt gelb"></i>richtig, aber falscher Platz</span>
+      <span><i class="punkt rot"></i>falsch</span>
+    </div>
+
+    <div class="brett" id="brett"></div>
+
+    <div id="eingabe">
+      <div class="obstleiste" id="obstleiste"></div>
+      <div class="aktionen">
+        <button class="knopf zweit" type="button" id="loeschen">Löschen</button>
+        <button class="knopf" type="button" id="einloggen" disabled>Einloggen</button>
+      </div>
+    </div>
+    <p id="meldung" aria-live="polite"></p>
+    <div id="ende" hidden class="mitte">
+      <div class="loesung" id="loesung"></div>
+      <button class="knopf" type="button" id="neu">Neues Spiel</button>
+    </div>
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/motive.js"></script>
+  <script src="../js/fortschritt.js"></script>
+  <script>
+    (function () {
+      var LAENGE = 5, VERSUCHE = 8;
+
+      function svg(inhalt) { return '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">' + inhalt + "</svg>"; }
+      var OBST = [
+        { id: "apfel", name: "Apfel", svg: svg('<path d="M20 12 C14 8 6 11 7 21 C8 31 15 36 20 33 C25 36 32 31 33 21 C34 11 26 8 20 12 Z" fill="#e23b3b"/><path d="M20 12 L21 5" stroke="#5a3b1d" stroke-width="2" stroke-linecap="round"/><path d="M22 8 C26 4 30 6 30 7 C27 10 24 10 22 8 Z" fill="#3f9e4d"/><ellipse cx="13" cy="18" rx="2.5" ry="4" fill="#fff" opacity=".35"/>') },
+        { id: "birne", name: "Birne", svg: svg('<path d="M20 7 C16 7 15 12 15 15 C15 19 9 22 9 28 C9 34 14 37 20 37 C26 37 31 34 31 28 C31 22 25 19 25 15 C25 12 24 7 20 7 Z" fill="#c9d63a" stroke="#9aa520" stroke-width="1"/><path d="M20 7 L20 2" stroke="#5a3b1d" stroke-width="2" stroke-linecap="round"/><ellipse cx="14" cy="28" rx="2" ry="3.5" fill="#fff" opacity=".35"/>') },
+        { id: "kirsche", name: "Kirsche", svg: svg('<path d="M13 26 Q16 12 22 5 M27 26 Q25 14 22 5" stroke="#3b5d1d" stroke-width="2" fill="none" stroke-linecap="round"/><path d="M22 5 C26 3 30 5 31 7 C28 9 24 8 22 5 Z" fill="#3f9e4d"/><circle cx="12" cy="29" r="7.5" fill="#b3112e"/><circle cx="28" cy="29" r="7.5" fill="#b3112e"/><circle cx="9.5" cy="26.5" r="2" fill="#fff" opacity=".4"/><circle cx="25.5" cy="26.5" r="2" fill="#fff" opacity=".4"/>') },
+        { id: "aprikose", name: "Aprikose", svg: svg('<circle cx="20" cy="22" r="14" fill="#f5a03a"/><path d="M20 9 C17 15 17 29 20 35" stroke="#d9822a" stroke-width="1.6" fill="none"/><circle cx="25" cy="18" r="5" fill="#ffc46b" opacity=".6"/><path d="M20 9 C23 5 28 5 29 6 C27 9 23 10 20 9 Z" fill="#3f9e4d"/>') },
+        { id: "zwetschge", name: "Zwetschge", svg: svg('<ellipse cx="20" cy="22" rx="11" ry="14.5" fill="#5b2d8e"/><path d="M20 8 C17 15 17 29 20 36" stroke="#3f1d66" stroke-width="1.4" fill="none"/><ellipse cx="15" cy="18" rx="2.5" ry="5" fill="#fff" opacity=".25"/><path d="M20 8 L21 3" stroke="#5a3b1d" stroke-width="2" stroke-linecap="round"/>') },
+        { id: "zitrone", name: "Zitrone", svg: svg('<path d="M4 21 C6 17 9 11 20 10 C31 11 34 17 36 21 C34 25 31 31 20 32 C9 31 6 25 4 21 Z" fill="#f7e03a" stroke="#d9bf1e" stroke-width="1"/><ellipse cx="15" cy="17" rx="5" ry="2" fill="#fff" opacity=".45"/>') }
+      ];
+
+      var brett = document.getElementById("brett");
+      var leiste = document.getElementById("obstleiste");
+      var knopfEin = document.getElementById("einloggen");
+      var meldung = document.getElementById("meldung");
+      var code, versuch, eingabe, reihen, vorbei;
+
+      OBST.forEach(function (f, i) {
+        var b = document.createElement("button");
+        b.type = "button";
+        b.className = "frucht-knopf";
+        b.setAttribute("aria-label", f.name);
+        b.innerHTML = f.svg + "<small>" + f.name + "</small>";
+        b.addEventListener("click", function () { setzen(i); });
+        leiste.appendChild(b);
+      });
+
+      function start() {
+        code = [];
+        for (var i = 0; i < LAENGE; i++) code.push(Math.floor(Math.random() * OBST.length));
+        versuch = 0;
+        vorbei = false;
+        eingabe = leer();
+        meldung.textContent = "";
+        document.getElementById("eingabe").hidden = false;
+        document.getElementById("ende").hidden = true;
+        brett.innerHTML = "";
+        reihen = [];
+        for (var r = 0; r < VERSUCHE; r++) {
+          var reihe = document.createElement("div");
+          reihe.className = "reihe";
+          var html = '<span class="nr">' + (r + 1) + "</span>";
+          for (var s = 0; s < LAENGE; s++) html += '<button type="button" class="loch" data-stelle="' + s + '" aria-label="Platz ' + (s + 1) + '"></button>';
+          html += '<div class="wertung"></div>';
+          reihe.innerHTML = html;
+          brett.appendChild(reihe);
+          reihen.push(reihe);
+        }
+        zeichnen();
+      }
+
+      function leer() { var a = []; for (var i = 0; i < LAENGE; i++) a.push(null); return a; }
+
+      function zeichnen() {
+        reihen.forEach(function (r, i) { r.classList.toggle("aktiv", i === versuch && !vorbei); });
+        var reihe = reihen[versuch];
+        if (!reihe) return;
+        var loecher = reihe.querySelectorAll(".loch");
+        eingabe.forEach(function (f, s) { loecher[s].innerHTML = f === null ? "" : OBST[f].svg; });
+        knopfEin.disabled = eingabe.indexOf(null) >= 0;
+      }
+
+      function setzen(f) {
+        if (vorbei) return;
+        var frei = eingabe.indexOf(null);
+        if (frei < 0) return;
+        eingabe[frei] = f;
+        zeichnen();
+      }
+
+      // Antippen eines gefüllten Platzes in der aktuellen Reihe leert ihn wieder
+      brett.addEventListener("click", function (e) {
+        var loch = e.target.closest(".loch");
+        if (!loch || vorbei || loch.closest(".reihe") !== reihen[versuch]) return;
+        eingabe[Number(loch.dataset.stelle)] = null;
+        zeichnen();
+      });
+
+      document.getElementById("loeschen").addEventListener("click", function () {
+        for (var i = LAENGE - 1; i >= 0; i--) if (eingabe[i] !== null) { eingabe[i] = null; break; }
+        zeichnen();
+      });
+
+      function bewerten(tipp) {
+        var gruen = 0, gelb = 0, zaehlerCode = {}, zaehlerTipp = {};
+        for (var i = 0; i < LAENGE; i++) {
+          if (tipp[i] === code[i]) gruen++;
+          zaehlerCode[code[i]] = (zaehlerCode[code[i]] || 0) + 1;
+          zaehlerTipp[tipp[i]] = (zaehlerTipp[tipp[i]] || 0) + 1;
+        }
+        Object.keys(zaehlerTipp).forEach(function (f) { gelb += Math.min(zaehlerTipp[f], zaehlerCode[f] || 0); });
+        gelb -= gruen;
+        return { gruen: gruen, gelb: gelb, rot: LAENGE - gruen - gelb };
+      }
+
+      knopfEin.addEventListener("click", function () {
+        if (vorbei || eingabe.indexOf(null) >= 0) return;
+        var w = bewerten(eingabe);
+        reihen[versuch].querySelector(".wertung").innerHTML =
+          '<span class="gruen" title="richtig am richtigen Platz">' + w.gruen + "</span>" +
+          '<span class="gelb" title="richtig, aber falscher Platz">' + w.gelb + "</span>" +
+          '<span class="rot" title="falsch">' + w.rot + "</span>";
+        versuch++;
+        eingabe = leer();
+
+        if (w.gruen === LAENGE) {
+          vorbei = true;
+          zeichnen();
+          meldung.textContent = "Code geknackt in " + versuch + (versuch === 1 ? " Versuch!" : " Versuchen!");
+          document.getElementById("eingabe").hidden = true;
+          setTimeout(function () { Fortschritt.gewinnen("mastermind"); }, 500);
+          return;
+        }
+        if (versuch >= VERSUCHE) {
+          vorbei = true;
+          zeichnen();
+          meldung.textContent = "Leider keine Versuche mehr. Das war der Code:";
+          document.getElementById("eingabe").hidden = true;
+          document.getElementById("loesung").innerHTML = code.map(function (f) { return '<div class="loch">' + OBST[f].svg + "</div>"; }).join("");
+          document.getElementById("ende").hidden = false;
+          return;
+        }
+        zeichnen();
+      });
+
+      document.getElementById("neu").addEventListener("click", start);
+      start();
+    })();
+  </script>
+</body>
+</html>

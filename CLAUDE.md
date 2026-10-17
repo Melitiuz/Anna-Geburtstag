@@ -16,14 +16,16 @@ Stimmen bei allen vier Figuren Platz und Variante, erscheint nach "Bestätigen" 
 ## Aufbau
 Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später veröffentlicht werden.
 - `site/index.html` : Startseite mit Übersicht der 4 Quests, Fortschritt, 2 x 2 Feld, Ablage der Figuren, Hinweisen und Prüfen
-- `site/spiele/` : memory.html, quiz.html, schiebepuzzle.html, labyrinth.html
+- `site/spiele/` : mastermind.html, quiz.html, schiebepuzzle.html, labyrinth.html
+  - Obst-Mastermind: Code aus 5 Früchten (Apfel, Birne, Kirsche, Aprikose, Zwetschge, Zitrone, Wiederholung erlaubt),
+    8 Versuche, nach "Einloggen" nur Anzahlen: grün = richtiger Platz, gelb = falscher Platz, rot = falsch
 - `site/js/config.js` : Name der beschenkten Person, Nachricht im Popup (Text, Link, Gruß), Lösung (Platz und Variante je Figur) und Quizfragen
 - `site/js/motive.js` : die vier Figuren mit ihren Varianten als SVG, Hinweistexte und die Felder des 2 x 2 Rasters
 - `site/js/fortschritt.js` : Speichern des Fortschritts, Zuordnung Spiel zu Motiv, Gewinn-Overlay, Konfetti
 - `werkzeuge/server.ps1` : Testserver ohne Python/Node (`powershell -ExecutionPolicy Bypass -File werkzeuge\server.ps1`, dann http://localhost:8080)
   - mit `-Netz` auch im WLAN erreichbar, z. B. vom Handy unter http://192.168.178.26:8080/ (Firewall-Freigabe für private Netzwerke nötig)
 
-Zuordnung Spiel zu Motiv: Memory → Baum, Quiz → Prinzessin, Schiebepuzzle → Burg, Ritter-Labyrinth → Ritter.
+Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Quiz → Prinzessin, Schiebepuzzle → Burg, Ritter-Labyrinth → Ritter.
 
 ## Technik
 - Rein statische Website: HTML, CSS und JavaScript, kein Server, keine Datenbank
@@ -55,6 +57,6 @@ Zuordnung Spiel zu Motiv: Memory → Baum, Quiz → Prinzessin, Schiebepuzzle �
 - [x] Name der beschenkten Person: Anna
 - [x] Geschenk-Link: https://www.bodaborg.de/bochum/
 - [ ] Nachricht zum Geschenk (Text folgt)
-- [x] Spiele: Quiz, Ritter-Labyrinth (Geschicklichkeit), Memory, Schiebepuzzle
+- [x] Spiele: Obst-Mastermind, Quiz, Schiebepuzzle, Ritter-Labyrinth (Geschicklichkeit)
 - [ ] Quizfragen über Anna
 - [ ] Veröffentlichen (später, voraussichtlich GitHub Pages)
