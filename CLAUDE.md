@@ -8,13 +8,14 @@ Die Motive werden per Drag and Drop an ihre Plätze in einem fertigen Bild gezog
 Sind alle vier richtig angeordnet, erscheint nach "Bestätigen" ein Popup mit der Nachricht zum Geschenk.
 
 ## Aufbau
-Veröffentlicht wird nur der Ordner `site/` (siehe `.github/workflows/pages.yml`).
+Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später veröffentlicht werden.
 - `site/index.html` : Startseite mit Übersicht der 4 Spiele, Fortschritt, Bild mit Zielplätzen, Ablage der Motive und Prüfen
 - `site/spiele/` : memory.html, quiz.html, schiebepuzzle.html, labyrinth.html
 - `site/js/config.js` : Name der beschenkten Person, Nachricht im Popup (Text, Link, Gruß) und Quizfragen
 - `site/js/motive.js` : die vier Motive und das Hintergrundbild als SVG, dazu die Zielplätze (Raster 400 x 300)
 - `site/js/fortschritt.js` : Speichern des Fortschritts, Zuordnung Spiel zu Motiv, Gewinn-Overlay, Konfetti
-- `werkzeuge/server.ps1` : lokaler Testserver ohne Python/Node (`powershell -ExecutionPolicy Bypass -File werkzeuge\server.ps1`, dann http://localhost:8080)
+- `werkzeuge/server.ps1` : Testserver ohne Python/Node (`powershell -ExecutionPolicy Bypass -File werkzeuge\server.ps1`, dann http://localhost:8080)
+  - mit `-Netz` auch im WLAN erreichbar, z. B. vom Handy unter http://192.168.178.26:8080/ (Firewall-Freigabe für private Netzwerke nötig)
 
 Zuordnung Spiel zu Motiv: Memory → Baum, Quiz → Prinzessin, Schiebepuzzle → Burg, Ritter-Labyrinth → Ritter.
 
@@ -27,9 +28,9 @@ Zuordnung Spiel zu Motiv: Memory → Baum, Quiz → Prinzessin, Schiebepuzzle �
 ## Hosting und Workflow
 - Code liegt im GitHub Repository https://github.com/Melitiuz/Anna-Geburtstag (derzeit privat, soll später öffentlich werden)
 - Commits mit Autor `Melitiuz <Melitiuz@users.noreply.github.com>` (im Repository eingestellt)
-- Hosting über GitHub Pages: `.github/workflows/pages.yml` veröffentlicht bei jedem Push auf main den Ordner `site/`
-  - Adresse: https://melitiuz.github.io/Anna-Geburtstag/
-  - Voraussetzung: Repository öffentlich, unter Settings → Pages als Quelle "GitHub Actions" gewählt
+- **Noch nicht veröffentlichen.** Die Seite geht erst online, wenn der Nutzer es ausdrücklich sagt.
+- Geplantes Hosting: GitHub Pages (Adresse dann https://melitiuz.github.io/Anna-Geburtstag/).
+  Die Veröffentlichungs-Automatik (Workflow) wurde bewusst wieder entfernt und wird erst bei Bedarf angelegt.
 
 ## Sprache und Stil
 - Alle Texte auf der Website auf Deutsch
@@ -42,4 +43,4 @@ Zuordnung Spiel zu Motiv: Memory → Baum, Quiz → Prinzessin, Schiebepuzzle �
 - [ ] Nachricht zum Geschenk (Text folgt)
 - [x] Spiele: Quiz, Ritter-Labyrinth (Geschicklichkeit), Memory, Schiebepuzzle
 - [ ] Quizfragen über Anna
-- [x] Hosting: GitHub Pages
+- [ ] Veröffentlichen (später, voraussichtlich GitHub Pages)
