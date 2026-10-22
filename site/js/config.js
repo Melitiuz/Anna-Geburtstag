@@ -14,15 +14,17 @@ window.GEBURTSTAG = {
   },
 
   // Richtiger Platz im 2 x 2 Feld und richtige Variante jeder Figur.
-  // Den passenden Hinweis bekommt Anna nach dem jeweiligen Spiel.
+  // Den passenden Hinweis bekommt Anna nach dem jeweiligen Spiel. Jeder Hinweis verrät nur einen Teil,
+  // erst alle vier zusammen ergeben die Lösung. Ohne "hinweis" werden Platz und Variante direkt genannt.
   //   platz: "oben-links", "oben-rechts", "unten-links" oder "unten-rechts" (jeder Platz nur einmal)
-  //   burg: 1 bis 4 Flaggen | prinzessin: 1 bis 4 Edelsteine in der Krone
+  //   burg: Fahnen mit "rotkehlchen" (rot), "fisch" (blau), "loewe" (gelb) oder "schlange" (grün)
+  //   prinzessin: drei "rubin", "smaragd", "saphir" oder "diamant" in der Krone
   //   baum: "aepfel", "birnen", "kirschen" oder "pflaumen" | ritter: "links" oder "rechts"
   loesung: {
-    burg: { platz: "oben-links", variante: 3 },
-    prinzessin: { platz: "oben-rechts", variante: 2 },
-    baum: { platz: "unten-rechts", variante: "kirschen" },
-    ritter: { platz: "unten-links", variante: "links" }
+    burg: { platz: "oben-links", variante: "loewe", hinweis: "Die Burg steht in der oberen Reihe. Auf ihren Fahnen ist ein Löwe zu sehen." },
+    prinzessin: { platz: "oben-rechts", variante: "saphir", hinweis: "Die Prinzessin steht direkt über dem Baum. In ihrer Krone funkeln Saphire." },
+    baum: { platz: "unten-rechts", variante: "birnen", hinweis: "Der Baum steht schräg gegenüber der Burg. Seine Früchte haben dieselbe Farbe wie die Fahnen der Burg." },
+    ritter: { platz: "unten-links", variante: "links", hinweis: "Der Ritter reitet nach links, weg von der Prinzessin." }
   },
 
 

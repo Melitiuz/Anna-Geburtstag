@@ -6,11 +6,15 @@ Sie enthält 4 Minispiele (Quests). Jede gewonnene Quest schaltet eine Figur fre
 (Ritter auf Pferd, Baum, Prinzessin mit Krone, Burg).
 Die Figuren werden per Drag and Drop in ein leeres 2 x 2 Feld gezogen. Das Feld zeigt keine Vorgaben,
 wohin welche Figur gehört, steht nur in den Hinweisen.
-Jede Figur hat Varianten, die man durch Antippen durchschaltet: Burg 1 bis 4 Flaggen, Krone der Prinzessin
-1 bis 4 Edelsteine, Baum mit Äpfeln, Birnen, Kirschen oder Pflaumen, Ritter reitet nach links oder rechts.
-Richtiger Platz und richtige Variante stehen in `config.js` (`loesung`). Nach jedem gewonnenen Spiel zeigt das
-Gewinnfenster den passenden Hinweis (z. B. "Die Burg steht oben links. Auf ihr wehen drei Flaggen."),
-auf der Startseite stehen alle gesammelten Hinweise.
+Jede Figur hat Varianten, die man durch Antippen durchschaltet: Burg mit vier Fahnen, alle mit demselben Tier
+(rot mit Rotkehlchen, blau mit Fisch, gelb mit Löwe, grün mit Schlange), Krone der Prinzessin mit drei gleichen Edelsteinen
+(Rubin, Smaragd, Saphir, Diamant), Baum mit Äpfeln, Birnen, Kirschen oder Pflaumen, Ritter reitet nach links oder rechts.
+Richtiger Platz, richtige Variante und Hinweistext stehen in `config.js` (`loesung`). Die Hinweise sind bewusst schwer:
+Sie beschreiben Plätze relativ zu anderen Figuren und verraten jeweils nur einen Teil, erst alle vier zusammen ergeben
+genau eine Lösung (Burg oben links mit Löwen, Prinzessin oben rechts mit Saphiren, Ritter unten links nach links,
+Baum unten rechts mit Birnen). Nach jedem gewonnenen Spiel zeigt das Gewinnfenster den Hinweis und die Figur in einer
+neutralen Variante (weiße Fahnen, graue Edelsteine, Baum ohne Früchte), damit sie nichts verrät.
+Auf der Startseite stehen alle gesammelten Hinweise.
 Stimmen bei allen vier Figuren Platz und Variante, erscheint nach "Bestätigen" ein Popup mit der Nachricht zum Geschenk.
 
 ## Aufbau

@@ -59,7 +59,7 @@
       var koerperBild = bildAus(Motive.MOTIVE.ritter.zeichnen("rechts")
         .replace(/<rect x="\d+" y="(?:64|66|89)"[^>]*\/>/g, "")
         .replace(/<ellipse cx="50" cy="95"[^>]*\/>/, ""));
-      var burgBild = bildAus(Motive.MOTIVE.burg.zeichnen(2));
+      var burgBild = bildAus(Motive.MOTIVE.burg.svg);
       // Beine in den Koordinaten des Motivs (100 x 100), hintere zuerst
       var BEINE = [
         { x: 41, y: 66, l: 26, farbe: "#6a3f25", vorn: false, versatz: 0.8 },

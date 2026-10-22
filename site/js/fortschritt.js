@@ -59,10 +59,10 @@
       '<circle cx="12" cy="6" r="1.5" fill="#e03a4a"/><circle cx="58" cy="20" r="1.5" fill="#e03a4a"/><circle cx="34" cy="16" r="1.5" fill="#e03a4a"/><circle cx="16" cy="42" r="1.5" fill="#e03a4a"/>' +
       '<rect x="27.5" y="27" width="9" height="11" rx="1" fill="url(#ik-turm)"/><path d="M26.5 27.5 L32 20 L37.5 27.5 Z" fill="#e0353c"/>' +
       '<rect x="30.5" y="32" width="3" height="6" rx="1.5" fill="#6a3f25"/><path d="M32 20 V15" stroke="#6a3f25" stroke-width="1"/><path d="M32 15 L36.5 16.5 L32 18 Z" fill="#f6c544"/>' +
-      '<path d="M30.5 46 C28 38 39 35.5 42 41.5 C38.5 40.5 35.5 42.5 34.5 46 Z" fill="url(#ik-feder)"/>' +
-      '<circle cx="32" cy="53" r="8.5" fill="url(#ik-helm)"/>' +
-      '<rect x="25.5" y="51" width="13" height="3.4" rx="1.7" fill="#2b2433"/><path d="M32 45 V50.5 M32 55 V61" stroke="#7e8894" stroke-width="1.2" opacity=".7"/>' +
-      '<ellipse cx="28.5" cy="48.5" rx="2.6" ry="1.6" fill="#fff" opacity=".7"/>'
+      '<path d="M30.5 43 C28 35 39 32.5 42 38.5 C38.5 37.5 35.5 39.5 34.5 43 Z" fill="url(#ik-feder)"/>' +
+      '<circle cx="32" cy="50" r="7.5" fill="url(#ik-helm)"/>' +
+      '<rect x="26.5" y="48.3" width="11" height="3.2" rx="1.6" fill="#2b2433"/><path d="M32 42.5 V48 M32 52 V57.5" stroke="#7e8894" stroke-width="1.2" opacity=".7"/>' +
+      '<ellipse cx="29" cy="45.5" rx="2.2" ry="1.4" fill="#fff" opacity=".7"/>'
     )
   };
 
@@ -151,7 +151,7 @@
       '<div class="karte">' +
       "<h2>Geschafft!</h2>" +
       "<p>" + (neu ? "Quest gelöst! Neue Figur freigeschaltet:" : "Diese Figur hattest du schon:") + "</p>" +
-      '<div class="motiv-gross">' + motiv.zeichnen(M.loesung(motivId)) + "</div>" +
+      '<div class="motiv-gross">' + motiv.svg + "</div>" +
       "<p><strong>" + motiv.name + "</strong></p>" +
       '<p class="hinweis">💡 ' + M.hinweis(motivId) + "</p>" +
       '<p class="leise">' + anzahl + " von 4 Figuren gesammelt" +

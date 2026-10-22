@@ -1,7 +1,6 @@
 // Die vier Figuren mit ihren Varianten und das 2 x 2 Feld, in das sie gelegt werden.
 // Alles als SVG, keine Bilddateien nötig.
 (function () {
-  var ZAHLWORT = ["", "eine", "zwei", "drei", "vier"];
 
   function svg(inhalt) {
     return '<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">' + inhalt + "</svg>";
@@ -55,14 +54,22 @@
     );
   }
 
-  // Prinzessin mit 1 bis 4 Edelsteinen in der Krone
-  function prinzessin(steine) {
-    var farben = ["#e8466e", "#3fb5e8", "#2fae6b", "#7c5cff"];
+  // Prinzessin mit drei Edelsteinen derselben Sorte in der Krone. Ohne Sorte (Gewinnfenster): graue Steine.
+  var EDELSTEINE = {
+    rubin: { farbe: "#d81f3c", licht: "#ff8a9a", name: "Rubine" },
+    smaragd: { farbe: "#169c50", licht: "#7be3a6", name: "Smaragde" },
+    saphir: { farbe: "#2459d6", licht: "#8db2ff", name: "Saphire" },
+    diamant: { farbe: "#eef7ff", licht: "#ffffff", name: "Diamanten" }
+  };
+  function prinzessin(sorte) {
+    var st = EDELSTEINE[sorte] || { farbe: "#9aa0a8", licht: "#c9cdd3" };
     var s = "";
-    for (var i = 0; i < steine; i++) {
-      var x = steine === 1 ? 50 : 38.5 + (23 * i) / (steine - 1);
-      s += '<circle cx="' + x + '" cy="14" r="3" fill="' + farben[i] + '" stroke="#fff" stroke-width=".7"/>';
-    }
+    [40, 50, 60].forEach(function (x, i) {
+      var y = i === 1 ? 10 : 13;
+      s += '<path d="M' + x + " " + (y - 4) + " L" + (x + 3.6) + " " + (y - 1) + " L" + x + " " + (y + 4) + " L" + (x - 3.6) + " " + (y - 1) +
+        ' Z" fill="' + st.farbe + '" stroke="' + (sorte === "diamant" ? "#9fb8cc" : "#fff") + '" stroke-width=".7"/>' +
+        '<path d="M' + (x - 1.6) + " " + (y - 2) + " L" + x + " " + (y - 3) + " L" + (x + 0.6) + " " + (y - 1.2) + ' Z" fill="' + st.licht + '"/>';
+    });
     return svg(
       '<ellipse cx="50" cy="95" rx="26" ry="3.5" fill="rgba(0,0,0,.15)"/>' +
       '<path d="M37 30 C33 50 34 60 30 66 H70 C66 60 67 50 63 30 Z" fill="#f2c14e"/>' +
@@ -79,18 +86,35 @@
     );
   }
 
-  // Burg mit 0 bis 4 gehissten Flaggen
-  var FLAGGEN = [
-    '<line x1="20" y1="10" x2="20" y2="1" stroke="#555" stroke-width="1.5"/><path d="M20 1 L28 3.5 L20 6 Z" fill="#e8466e"/>',
-    '<line x1="80" y1="10" x2="80" y2="1" stroke="#555" stroke-width="1.5"/><path d="M80 1 L88 3.5 L80 6 Z" fill="#f59e2c"/>',
-    '<line x1="38" y1="40" x2="38" y2="27" stroke="#555" stroke-width="1.5"/><path d="M38 27 L46 29.5 L38 32 Z" fill="#2fae6b"/>',
-    '<line x1="62" y1="40" x2="62" y2="27" stroke="#555" stroke-width="1.5"/><path d="M62 27 L70 29.5 L62 32 Z" fill="#7c5cff"/>'
-  ];
-
-  function burg(flaggen) {
+  // Burg mit vier Fahnen, alle mit demselben Tier. Ohne Tier (Gewinnfenster): weiße Fahnen.
+  // Tiere in Fahnen-Koordinaten (14 x 10)
+  var WAPPEN = {
+    rotkehlchen: { farbe: "#d9363e", name: "ein Rotkehlchen", bild:
+      '<path d="M10.4 5.2 L13 3.6 L12.6 6.4 Z" fill="#7a4a26" stroke="#fff" stroke-width=".35"/>' +
+      '<ellipse cx="7.6" cy="5.6" rx="3.4" ry="2.5" fill="#8a5a34" stroke="#fff" stroke-width=".4"/>' +
+      '<circle cx="4.7" cy="3.7" r="1.8" fill="#8a5a34" stroke="#fff" stroke-width=".4"/>' +
+      '<ellipse cx="5.4" cy="5.6" rx="1.8" ry="2" fill="#ff8f2e"/><path d="M3 3.4 L1.6 4 L3 4.3 Z" fill="#f2c230"/>' +
+      '<circle cx="4.3" cy="3.3" r=".45" fill="#111"/><path d="M6.8 8 V9.2 M8.4 8 V9.2" stroke="#fff" stroke-width=".4"/>' },
+    fisch: { farbe: "#2f6fd6", name: "ein Fisch", bild:
+      '<ellipse cx="6.3" cy="5" rx="3.6" ry="2.2" fill="#fff"/><path d="M9.4 5 L12.4 2.8 L12.4 7.2 Z" fill="#fff"/><circle cx="4.4" cy="4.5" r=".6" fill="#2f6fd6"/>' },
+    loewe: { farbe: "#f2c230", name: "ein Löwe", bild:
+      '<circle cx="7" cy="5" r="3.6" fill="#a8641e"/><circle cx="7" cy="5.3" r="2.2" fill="#f7d977"/>' +
+      '<circle cx="6.2" cy="4.8" r=".4" fill="#3a2410"/><circle cx="7.8" cy="4.8" r=".4" fill="#3a2410"/><path d="M6.4 6.3 Q7 6.9 7.6 6.3" stroke="#3a2410" stroke-width=".5" fill="none"/>' },
+    schlange: { farbe: "#2fa04a", name: "eine Schlange", bild:
+      '<path d="M2 7.6 C3.6 3.2 6 9.2 8 5.6 C9.2 3.4 10.8 3.2 11.6 4.2" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="11.8" cy="4.3" r="1.1" fill="#fff"/>' }
+  };
+  var FAHNEN_ORTE = [[24.5, 3, 23], [75.5, 3, 23], [32.5, 31, 48], [52.5, 31, 48]]; // Mast x, Fahne oben, Mast unten
+  function burg(tier) {
+    var w = WAPPEN[tier];
+    var fahnen = FAHNEN_ORTE.map(function (o) {
+      return '<line x1="' + o[0] + '" y1="' + o[2] + '" x2="' + o[0] + '" y2="' + o[1] + '" stroke="#555" stroke-width="1.5"/>' +
+        '<g transform="translate(' + o[0] + " " + o[1] + ') scale(1.15)"><path d="M0 0 H14 L12 5 L14 10 H0 Z" fill="' + (w ? w.farbe : "#ececec") + '" stroke="rgba(0,0,0,.25)" stroke-width=".5"/>' +
+        (w ? w.bild : "") + "</g>";
+    }).join("");
     return svg(
-      '<ellipse cx="50" cy="95" rx="40" ry="3.5" fill="rgba(0,0,0,.15)"/>' +
-      FLAGGEN.slice(0, flaggen).join("") +
+      '<ellipse cx="50" cy="95" rx="36" ry="3.5" fill="rgba(0,0,0,.15)"/>' +
+      // Burg etwas kleiner, damit die Fahnen darüber Platz haben
+      '<g transform="translate(7.5 14.1) scale(.85)">' +
       '<rect x="22" y="46" width="56" height="48" fill="#b3b6c2"/>' +
       '<path d="M22 46 h6 v-6 h7 v6 h6 v-6 h7 v6 h6 v-6 h7 v6 h6 v-6 h5 v6" fill="#b3b6c2"/>' +
       '<rect x="10" y="30" width="20" height="64" fill="#a2a5b2"/><rect x="70" y="30" width="20" height="64" fill="#a2a5b2"/>' +
@@ -98,7 +122,8 @@
       '<path d="M40 94 V76 Q50 64 60 76 V94 Z" fill="#6a3f25"/><path d="M50 69 V94" stroke="#4a2e1d" stroke-width="1.5"/>' +
       '<rect x="17" y="44" width="6" height="10" rx="3" fill="#2b1d2e"/><rect x="77" y="44" width="6" height="10" rx="3" fill="#2b1d2e"/>' +
       '<rect x="47" y="52" width="6" height="9" rx="3" fill="#2b1d2e"/>' +
-      '<path d="M24 66 h8 M60 60 h10 M30 80 h6 M66 84 h8" stroke="#9497a5" stroke-width="1.5"/>'
+      '<path d="M24 66 h8 M60 60 h10 M30 80 h6 M66 84 h8" stroke="#9497a5" stroke-width="1.5"/></g>' +
+      fahnen
     );
   }
 
@@ -126,22 +151,18 @@
     prinzessin: {
       name: "Prinzessin mit Krone",
       wer: "Die Prinzessin",
-      varianten: [1, 2, 3, 4],
+      varianten: ["rubin", "smaragd", "saphir", "diamant"],
       zeichnen: prinzessin,
-      standard: 0,
-      hinweis: function (v) {
-        return v === 1 ? "In ihrer Krone funkelt ein Edelstein." : "In ihrer Krone funkeln " + ZAHLWORT[v] + " Edelsteine.";
-      }
+      standard: "",
+      hinweis: function (v) { return "In ihrer Krone funkeln " + EDELSTEINE[v].name + "."; }
     },
     burg: {
       name: "Burg",
       wer: "Die Burg",
-      varianten: [1, 2, 3, 4],
+      varianten: ["rotkehlchen", "fisch", "loewe", "schlange"],
       zeichnen: burg,
-      standard: 2,
-      hinweis: function (v) {
-        return v === 1 ? "Auf ihr weht eine Flagge." : "Auf ihr wehen " + ZAHLWORT[v] + " Flaggen.";
-      }
+      standard: "",
+      hinweis: function (v) { return "Auf ihren Fahnen ist " + WAPPEN[v].name + " zu sehen."; }
     }
   };
   Object.keys(MOTIVE).forEach(function (id) {
@@ -176,7 +197,8 @@
     loesung: loesung,
     platz: platz,
     hinweis: function (id) {
-      return MOTIVE[id].wer + " steht " + FELD_TEXT[platz(id)] + ". " + MOTIVE[id].hinweis(loesung(id));
+      // Eigener Hinweistext aus config.js, sonst Platz und Variante direkt
+      return eintrag(id).hinweis || MOTIVE[id].wer + " steht " + FELD_TEXT[platz(id)] + ". " + MOTIVE[id].hinweis(loesung(id));
     }
   };
 })();
