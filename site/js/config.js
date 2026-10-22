@@ -23,7 +23,7 @@ window.GEBURTSTAG = {
   //   baum: "aepfel", "birnen", "kirschen" oder "pflaumen" | ritter: "links" oder "rechts"
   loesung: {
     burg: { platz: "oben-rechts", variante: "schlange", hinweis: "Das Wappentier der Burg hat weder Federn noch Flossen. Sie thront direkt über dem Baum." },
-    prinzessin: { platz: "unten-links", variante: "rubin", hinweis: "Die Farbe ihrer Edelsteine gibt es an manchen Bäumen, aber nicht auf den Fahnen der Burg. Das Wappentier der Burg hat keine Mähne." },
+    prinzessin: { platz: "unten-links", variante: "rubin", hinweis: "Ihre Edelsteine haben die Farbe von Früchten, die der Baum tragen könnte, aber nicht trägt. Das Wappentier der Burg hat keine Mähne." },
     baum: { platz: "unten-rechts", variante: "pflaumen", hinweis: "Der Baum trägt Früchte in einer Farbe, die weder eine Fahne noch ein Edelstein hat." },
     ritter: { platz: "oben-links", variante: "links", hinweis: "Der Ritter reitet von der Burg weg, der untergehenden Sonne entgegen." }
   },
