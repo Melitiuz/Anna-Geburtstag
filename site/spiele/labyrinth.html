@@ -30,7 +30,6 @@
     <div class="werte"><span>Versuch: <b id="versuch">1</b></span><span>Ziel: Burg in der Mitte</span></div>
     <div class="feld" id="feld"><canvas id="leinwand"></canvas></div>
     <p class="mitte" id="meldung" aria-live="polite"></p>
-    <p class="mitte"><button class="knopf zweit" id="neu" type="button">Neues Labyrinth</button></p>
   </main>
 
   <script src="../js/config.js"></script>
@@ -269,11 +268,6 @@
         zeichnen();
       });
 
-      document.getElementById("neu").addEventListener("click", function () {
-        versuch = 1;
-        versuchEl.textContent = 1;
-        neu();
-      });
       neu();
     })();
   </script>
