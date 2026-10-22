@@ -15,17 +15,17 @@ window.GEBURTSTAG = {
 
   // Richtiger Platz im 2 x 2 Feld und richtige Variante jeder Figur.
   // Den passenden Hinweis bekommt Anna nach dem jeweiligen Spiel. Jeder Hinweis verrät nur einen Teil,
-  // erst alle vier zusammen ergeben die Lösung. Die Hinweise nennen bewusst keinen Platz und keine Variante direkt,
+  // erst alle vier zusammen ergeben die Lösung (eindeutig, per Durchprobieren geprüft). Die Hinweise nennen bewusst keinen Platz und keine Variante direkt,
   // sondern mischen Verneinungen und Aussagen über Bezüge zu anderen Figuren. Ohne "hinweis" werden Platz und Variante direkt genannt.
   //   platz: "oben-links", "oben-rechts", "unten-links" oder "unten-rechts" (jeder Platz nur einmal)
   //   burg: Fahnen mit "rotkehlchen" (rot), "fisch" (blau), "loewe" (gelb) oder "schlange" (grün)
   //   prinzessin: drei "rubin", "smaragd", "saphir" oder "diamant" in der Krone
   //   baum: "aepfel", "birnen", "kirschen" oder "pflaumen" | ritter: "links" oder "rechts"
   loesung: {
-    burg: { platz: "oben-links", variante: "loewe", hinweis: "Auf den Fahnen der Burg ist ein Tier, das weder fliegen noch schwimmen kann. Direkt unter ihr steht, wer reitet." },
-    prinzessin: { platz: "oben-rechts", variante: "saphir", hinweis: "Die Edelsteine der Prinzessin leuchten in der Farbe der Fahne, deren Tier schwimmen kann. Neben dem Baum steht sie nicht." },
-    baum: { platz: "unten-rechts", variante: "birnen", hinweis: "Die Früchte des Baums haben die Farbe der Fahnen. Mit der Burg teilt der Baum weder Reihe noch Spalte." },
-    ritter: { platz: "unten-links", variante: "links", hinweis: "Der Ritter reitet nicht nach rechts. In seiner Reitrichtung steht keine Figur." }
+    burg: { platz: "oben-rechts", variante: "schlange", hinweis: "Das Wappentier der Burg hat weder Federn noch Flossen. Sie thront direkt über dem Baum." },
+    prinzessin: { platz: "unten-links", variante: "rubin", hinweis: "Die Farbe ihrer Edelsteine gibt es an manchen Bäumen, aber nicht auf den Fahnen der Burg. Das Wappentier der Burg hat keine Mähne." },
+    baum: { platz: "unten-rechts", variante: "pflaumen", hinweis: "Der Baum trägt Früchte in einer Farbe, die weder eine Fahne noch ein Edelstein hat." },
+    ritter: { platz: "oben-links", variante: "links", hinweis: "Der Ritter reitet von der Burg weg, der untergehenden Sonne entgegen." }
   },
 
 
