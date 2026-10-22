@@ -23,7 +23,7 @@
   <main class="seite">
     <a class="zurueck" href="../index.html">‹ Übersicht</a>
     <header class="kopf">
-      <h1>🪵 Brückenritt</h1>
+      <h1><span class="titel-icon" data-icon="brueckenritt"></span> Brückenritt</h1>
       <p class="unterzeile">Der Ritter jagt zur Burg, doch davor liegt ein Burggraben. Sammle unterwegs Holz für die Brücke.</p>
     </header>
     <div class="buehne" id="buehne"><canvas id="leinwand"></canvas></div>
@@ -133,8 +133,9 @@
         },
         astWolf: function (x, l) { l.push({ art: "ast", x: x, w: 70 }); l.push(wolfNeu(x + 230)); return { holz: 0, breite: 110 }; },
         holzVorStein: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_BODEN }); l.push({ art: "stein", x: x + 44, w: 28, h: 22 }); return { holz: 1, breite: 72 }; },
+        // Ein hoher Sprung über beide Steine, das Holz schwebt genau dazwischen
         doppelsteinHolz: function (x, l) {
-          l.push({ art: "stein", x: x, w: 26, h: 22 }); l.push({ art: "holz", x: x + 44, y: HOLZ_BODEN }); l.push({ art: "stein", x: x + 92, w: 26, h: 22 });
+          l.push({ art: "stein", x: x, w: 26, h: 22 }); l.push({ art: "holz", x: x + 44, y: HOLZ_HOCH }); l.push({ art: "stein", x: x + 92, w: 26, h: 22 });
           return { holz: 1, breite: 118 };
         },
         // Drei Hölzer im Bogen über einer Grube: nur mit genau passendem Sprung alle zu erwischen
@@ -631,7 +632,7 @@
         var klar = W - (W - 245) * dichte;
         var n = g.createLinearGradient(klar, 0, klar + 80, 0);
         n.addColorStop(0, misch("#d9d4e2", "#6d5f80", t, 0));
-        n.addColorStop(1, misch("#d9d4e2", "#6d5f80", t, (0.97 * dichte).toFixed(2)));
+        n.addColorStop(1, misch("#d9d4e2", "#6d5f80", t, (0.8 * dichte).toFixed(2)));
         g.fillStyle = n; g.fillRect(-5, -5, W + 10, H + 10);
         // Ein paar Schwaden treiben auch vor dem Ritter
         g.fillStyle = misch("#e6e2ec", "#7d6f90", t, (0.25 * dichte).toFixed(2));

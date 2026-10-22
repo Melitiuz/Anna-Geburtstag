@@ -19,7 +19,7 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
   Ablage der Figuren, Hinweisen und Prüfen
 - `site/spiele/` : mastermind.html, quiz.html, brueckenritt.html, labyrinth.html
   - Obst-Mastermind: Code aus 5 Früchten (Apfel, Birne, Kirsche, Aprikose, Zwetschge, Zitrone, Wiederholung erlaubt),
-    7 Versuche, nach "Einloggen" nur Anzahlen: grün = richtiger Platz, gelb = falscher Platz, rot = falsch
+    6 Versuche, nach "Einloggen" nur Anzahlen: grün = richtiger Platz, gelb = falscher Platz, rot = falsch
   - Ritter-Labyrinth: 11 x 11 Felder, Burghof (3 x 3) in der Mitte mit genau einem Zugang. Ein Eingang unten in der Mitte,
     der Ritter startet direkt davor. Ein durchgehendes Labyrinth (Tiefensuche) mit Abzweigungen und Sackgassen; der Weg
     zur Burg muss mindestens 2/3 aller Felder durchqueren (MIN_ANTEIL, mindestens 75 von 112), sonst wird neu gewürfelt.
@@ -40,16 +40,18 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
     Raben in Kopfhöhe (unten bleiben) und schwebende Raben über Stein oder Grube (nur hoher Sprung). Kombinationen: Grube vor Hecke,
     Stein vor Grube, Rabenpaar, Ast mit Wolf dahinter. Unberechenbar: Wölfe laufen verschieden schnell, die Hälfte springt
     plötzlich hoch, die Hälfte der fliegenden Raben stößt im Sturzflug herab, Fässer rollen verschieden schnell.
-    Im letzten Drittel zieht Nebel auf (Hindernisse erst kurz vorher sichtbar), vor dem Graben lichtet er sich. Auf der Seite stehen bewusst keine
+    Im letzten Drittel zieht Nebel auf (Hindernisse schimmern nur schwach durch), vor dem Graben lichtet er sich. Auf der Seite stehen bewusst keine
     Steuerungstipps. Springen per Tippen aufs Spielfeld oder über den großen Knopf darunter (Losreiten, Springen, Noch
     einmal). 30 Hölzer, nur an riskanten Stellen: über Steinen, Hecken und Raben, unter Ästen, im Bogen über Gruben,
-    direkt vor Steinen und zwischen zwei Steinen.
+    direkt vor Steinen und hoch zwischen zwei Steinen (ein hoher Sprung über beide).
     Jeder Zusammenstoß kostet 3 Hölzer. Am Ende ein Burggraben: mindestens 24 Hölzer ergeben die Brücke zur Burg.
     Strecke aus zufälligen Mustern, Tempo steigt von 280 auf 430, dichte Abstände. Mit ?test in der Adresse gibt es einen Testzugang
     (window.spielTest) für automatische Durchläufe
 - `site/js/config.js` : Name der beschenkten Person, Nachricht im Popup (Text, Link, Gruß), Lösung (Platz und Variante je Figur) und Quizfragen
 - `site/js/motive.js` : die vier Figuren mit ihren Varianten als SVG, Hinweistexte und die Felder des 2 x 2 Rasters
-- `site/js/fortschritt.js` : Speichern des Fortschritts und der Statistik, Zuordnung Spiel zu Motiv, Gewinn-Overlay, Konfetti
+- `site/js/fortschritt.js` : Speichern des Fortschritts und der Statistik, Zuordnung Spiel zu Motiv, Gewinn-Overlay, Konfetti,
+  Quest-Icons: Krone 👑 und Burg 🏰 als Emoji, Obstkorb und Ritter vor dem Heckenlabyrinth als SVG im Emoji-Stil;
+  in Spielseiten über `<span data-icon="...">` eingesetzt
   - Statistik: Fortschritt.versuch(id) zählt einen Versuch. Mastermind ab dem ersten eingeloggten Tipp, Quiz ab der ersten
     Antwort einer Runde, Brückenritt beim Losreiten, Labyrinth sobald sich der Ritter in einem neuen Labyrinth bewegt.
     Beim ersten Sieg wird gespeichert, im wievielten Versuch die Quest gelöst wurde

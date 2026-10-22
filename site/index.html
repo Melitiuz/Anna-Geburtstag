@@ -83,7 +83,8 @@
         summe += n;
         var li = document.createElement("li");
         li.innerHTML = '<span class="name"></span><span class="wert"></span><span class="info"></span>';
-        li.querySelector(".name").textContent = s.symbol + " " + s.titel;
+        li.querySelector(".name").innerHTML = s.symbol;
+        li.querySelector(".name").appendChild(document.createTextNode(" " + s.titel));
         li.querySelector(".wert").textContent = n;
         li.querySelector(".info").textContent = F.gewonnen(s.id)
           ? "✓ gelöst im " + (stat.geloestNach[s.id] || n || 1) + ". Versuch"
