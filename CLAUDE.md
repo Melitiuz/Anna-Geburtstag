@@ -10,7 +10,8 @@ Jede Figur hat Varianten, die man durch Antippen durchschaltet: Burg mit drei Fa
 (rot mit Rotkehlchen, blau mit Fisch, gelb mit Löwe, grün mit Schlange), Krone der Prinzessin mit drei gleichen Edelsteinen
 (Rubin, Smaragd, Saphir, Diamant), Baum mit Äpfeln, Birnen, Kirschen oder Pflaumen, Ritter reitet nach links oder rechts.
 Richtiger Platz, richtige Variante und Hinweistext stehen in `config.js` (`loesung`). Die Hinweise sind bewusst schwer:
-Sie nennen keinen Platz und keine Variante direkt, sondern arbeiten mit Verneinungen und Bezügen zu anderen Figuren
+Sie nennen keinen Platz und keine Variante direkt, sondern mischen Verneinungen und Aussagen über Bezüge zu anderen Figuren
+(ohne einen der vier Hinweise bleiben 4 bis 16 mögliche Lösungen)
 und verraten jeweils nur einen Teil, erst alle vier zusammen ergeben
 genau eine Lösung (Burg oben links mit Löwen, Prinzessin oben rechts mit Saphiren, Ritter unten links nach links,
 Baum unten rechts mit Birnen). Nach jedem gewonnenen Spiel zeigt das Gewinnfenster den Hinweis und die Figur in einer

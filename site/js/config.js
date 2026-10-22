@@ -16,16 +16,16 @@ window.GEBURTSTAG = {
   // Richtiger Platz im 2 x 2 Feld und richtige Variante jeder Figur.
   // Den passenden Hinweis bekommt Anna nach dem jeweiligen Spiel. Jeder Hinweis verrät nur einen Teil,
   // erst alle vier zusammen ergeben die Lösung. Die Hinweise nennen bewusst keinen Platz und keine Variante direkt,
-  // sondern arbeiten mit Verneinungen und Bezügen zu anderen Figuren. Ohne "hinweis" werden Platz und Variante direkt genannt.
+  // sondern mischen Verneinungen und Aussagen über Bezüge zu anderen Figuren. Ohne "hinweis" werden Platz und Variante direkt genannt.
   //   platz: "oben-links", "oben-rechts", "unten-links" oder "unten-rechts" (jeder Platz nur einmal)
   //   burg: Fahnen mit "rotkehlchen" (rot), "fisch" (blau), "loewe" (gelb) oder "schlange" (grün)
   //   prinzessin: drei "rubin", "smaragd", "saphir" oder "diamant" in der Krone
   //   baum: "aepfel", "birnen", "kirschen" oder "pflaumen" | ritter: "links" oder "rechts"
   loesung: {
-    burg: { platz: "oben-links", variante: "loewe", hinweis: "Die Burg steht unter keiner anderen Figur. Auf ihren Fahnen ist kein Tier, das fliegen kann." },
-    prinzessin: { platz: "oben-rechts", variante: "saphir", hinweis: "Die Prinzessin steht nicht in derselben Reihe wie der Baum. Ihre Edelsteine sind weder grün noch weiß noch rot." },
-    baum: { platz: "unten-rechts", variante: "birnen", hinweis: "Der Baum steht weder neben noch unter der Burg. Seine Früchte haben dieselbe Farbe wie ihre Fahnen." },
-    ritter: { platz: "unten-links", variante: "links", hinweis: "Der Ritter reitet nicht nach rechts und nicht auf den Baum zu." }
+    burg: { platz: "oben-links", variante: "loewe", hinweis: "Auf den Fahnen der Burg ist ein Tier, das weder fliegen noch schwimmen kann. Direkt unter ihr steht, wer reitet." },
+    prinzessin: { platz: "oben-rechts", variante: "saphir", hinweis: "Die Edelsteine der Prinzessin leuchten in der Farbe der Fahne, deren Tier schwimmen kann. Neben dem Baum steht sie nicht." },
+    baum: { platz: "unten-rechts", variante: "birnen", hinweis: "Die Früchte des Baums haben die Farbe der Fahnen. Mit der Burg teilt der Baum weder Reihe noch Spalte." },
+    ritter: { platz: "unten-links", variante: "links", hinweis: "Der Ritter reitet nicht nach rechts. In seiner Reitrichtung steht keine Figur." }
   },
 
 
