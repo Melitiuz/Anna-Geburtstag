@@ -33,13 +33,15 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
     silvia als .jpg, von Wikimedia Commons). Fehlt ein Foto, wird die Frage automatisch weggelassen.
     Quellenangabe je Foto steht in config.js (quelle) und erscheint unter dem Foto sowie auf site/bildnachweis.html
     (verlinkt im Fuß der Startseite). Neue Fotos nur mit freier Lizenz und mit Quellenangabe einbinden.
-  - Brückenritt (Geschicklichkeit): Seitwärts-Laufspiel, der Ritter reitet automatisch. Kurz tippen = kleiner Sprung,
+  - Brückenritt (Geschicklichkeit): Seitwärts-Laufspiel, der Ritter galoppiert automatisch (Beine einzeln animiert, Tag geht
+    zur Burg hin in Abendstimmung über). Kurz tippen = kleiner Sprung,
     gedrückt halten = hoher Sprung. Hindernisse: Steine, Doppelsteine, entgegenlaufende Wölfe und Wolfspaare, hohe
-    Hecken (nur hoher Sprung), tief hängende Äste (nicht springen), Stein direkt vor Ast. Auf der Seite stehen bewusst keine
+    Hecken (nur hoher Sprung), tief hängende Äste (nicht springen), Stein direkt vor Ast, rollende Fässer, Gruben, fliegende
+    Raben in Kopfhöhe (unten bleiben) und schwebende Raben über Stein oder Grube (nur hoher Sprung). Auf der Seite stehen bewusst keine
     Steuerungstipps. Springen per Tippen aufs Spielfeld oder über den großen Knopf darunter (Losreiten, Springen, Noch
     einmal). 30 Hölzer am Boden, niedrig, hoch, in Bögen, über Hecken und unter Ästen.
     Jeder Zusammenstoß kostet 4 Hölzer. Am Ende ein Burggraben: mindestens 20 Hölzer (2/3) ergeben die Brücke zur Burg.
-    Strecke aus zufälligen Mustern, Tempo steigt von 220 auf 340, dichte Abstände. Mit ?test in der Adresse gibt es einen Testzugang
+    Strecke aus zufälligen Mustern, Tempo steigt von 240 auf 370, dichte Abstände. Mit ?test in der Adresse gibt es einen Testzugang
     (window.spielTest) für automatische Durchläufe
 - `site/js/config.js` : Name der beschenkten Person, Nachricht im Popup (Text, Link, Gruß), Lösung (Platz und Variante je Figur) und Quizfragen
 - `site/js/motive.js` : die vier Figuren mit ihren Varianten als SVG, Hinweistexte und die Felder des 2 x 2 Rasters

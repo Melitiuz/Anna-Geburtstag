@@ -40,8 +40,9 @@
       var W = 400, H = 225, BODEN = 190, RX = 70, GRABEN_SCHIRM = 190;
       var HOLZ_GESAMT = 30, HOLZ_NOETIG = Math.ceil(HOLZ_GESAMT * 2 / 3), VERLUST = 4;
       var GRAVITATION = 1700, SPRUNG = -650, ABBRUCH = 0.35;   // Loslassen bremst den Aufstieg: kurzer Tipp = kleiner Sprung
-      var TEMPO_START = 220, TEMPO_ENDE = 340;
-      var AST_UNTEN = BODEN - 46, HOLZ_BODEN = BODEN - 16, HOLZ_NIEDRIG = BODEN - 50, HOLZ_HOCH = BODEN - 95;
+      var TEMPO_START = 240, TEMPO_ENDE = 370;
+      var AST_UNTEN = BODEN - 46, RABE_Y = BODEN - 56;
+      var HOLZ_BODEN = BODEN - 16, HOLZ_NIEDRIG = BODEN - 50, HOLZ_HOCH = BODEN - 95, HOLZ_GANZ_HOCH = BODEN - 112;
 
       var buehne = document.getElementById("buehne");
       var leinwand = document.getElementById("leinwand");
@@ -54,11 +55,21 @@
         img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
         return img;
       }
-      var ritterBild = bildAus(Motive.MOTIVE.ritter.zeichnen("rechts"));
+      // Der Ritter aus dem Finale, aber ohne Beine und Schatten: die Beine werden beim Galopp einzeln bewegt
+      var koerperBild = bildAus(Motive.MOTIVE.ritter.zeichnen("rechts")
+        .replace(/<rect x="\d+" y="(?:64|66|89)"[^>]*\/>/g, "")
+        .replace(/<ellipse cx="50" cy="95"[^>]*\/>/, ""));
       var burgBild = bildAus(Motive.MOTIVE.burg.zeichnen(2));
+      // Beine in den Koordinaten des Motivs (100 x 100), hintere zuerst
+      var BEINE = [
+        { x: 41, y: 66, l: 26, farbe: "#6a3f25", vorn: false, versatz: 0.8 },
+        { x: 61, y: 66, l: 26, farbe: "#6a3f25", vorn: true, versatz: 0.8 },
+        { x: 31, y: 64, l: 28, farbe: "#7a4b2e", vorn: false, versatz: 0 },
+        { x: 70, y: 64, l: 28, farbe: "#7a4b2e", vorn: true, versatz: 0 }
+      ];
 
-      var skala = 1, phase, welt, kamera, reiter, holz, unverwundbar, teile, texte, staub, wackeln,
-          grabenX, bauFortschritt, letzteZeit, gedrueckt, sprungPuffer;
+      var skala = 1, phase, welt, kamera, reiter, holz, unverwundbar, teile, texte, staub, funken, wackeln, blitz,
+          grabenX, bauFortschritt, letzteZeit, gedrueckt, sprungPuffer, zeit, laufPhase, treffer;
 
       function vermessen() {
         var dpr = window.devicePixelRatio || 1;
@@ -72,6 +83,8 @@
 
       function zufall(a, b) { return a + Math.random() * (b - a); }
       function tempoBei(x) { return TEMPO_START + (TEMPO_ENDE - TEMPO_START) * Math.min(1, x / grabenX); }
+      // Feste Pseudozufallszahl je Index: Hintergrund sieht abwechslungsreich aus, flackert aber nicht
+      function rausch(n) { var s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
 
       // ---------- Strecke aus Mustern ----------
       // Jedes Muster legt Hindernisse und Hölzer ab und gibt zurück, wie viel Holz und Platz es belegt.
@@ -80,25 +93,39 @@
         steinMitHolz: function (x, l) { l.push({ art: "stein", x: x, w: 30, h: 24 }); l.push({ art: "holz", x: x + 2, y: HOLZ_NIEDRIG }); return { holz: 1, breite: 30 }; },
         doppelstein: function (x, l) { l.push({ art: "stein", x: x, w: 26, h: 22 }); l.push({ art: "stein", x: x + 60, w: 26, h: 22 }); return { holz: 0, breite: 86 }; },
         wolf: function (x, l) { l.push({ art: "wolf", x: x + 120, w: 36, h: 22, vx: -90 }); return { holz: 0, breite: 40 }; },
+        wolfPaar: function (x, l) { l.push({ art: "wolf", x: x + 120, w: 36, h: 22, vx: -90 }); l.push({ art: "wolf", x: x + 185, w: 36, h: 22, vx: -90 }); return { holz: 0, breite: 110 }; },
+        fass: function (x, l) { l.push({ art: "fass", x: x + 150, w: 24, h: 24, vx: -150 }); return { holz: 0, breite: 40 }; },
         hecke: function (x, l) { l.push({ art: "hecke", x: x, w: 34, h: 80 }); return { holz: 0, breite: 34 }; },
-        heckeMitHolz: function (x, l) { l.push({ art: "hecke", x: x, w: 34, h: 80 }); l.push({ art: "holz", x: x + 4, y: HOLZ_HOCH }); return { holz: 1, breite: 34 }; },
+        heckeMitHolz: function (x, l) { l.push({ art: "hecke", x: x, w: 34, h: 80 }); l.push({ art: "holz", x: x + 4, y: HOLZ_GANZ_HOCH }); return { holz: 1, breite: 34 }; },
         ast: function (x, l) { l.push({ art: "ast", x: x, w: 70 }); l.push({ art: "holz", x: x + 22, y: HOLZ_BODEN }); return { holz: 1, breite: 70 }; },
-        holzBoden: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_BODEN }); l.push({ art: "holz", x: x + 46, y: HOLZ_BODEN }); return { holz: 2, breite: 72 }; },
-        holzNiedrig: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_NIEDRIG }); return { holz: 1, breite: 26 }; },
-        holzHoch: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_HOCH }); return { holz: 1, breite: 26 }; },
         steinAst: function (x, l) {
           // Kleiner Sprung über den Stein, dann sofort unten bleiben: dahinter hängt ein Ast
           var abstand = 30 + tempoBei(x) * 0.62;
           l.push({ art: "stein", x: x, w: 28, h: 22 }); l.push({ art: "ast", x: x + abstand, w: 70 }); l.push({ art: "holz", x: x + abstand + 22, y: HOLZ_BODEN });
           return { holz: 1, breite: abstand + 70 };
         },
-        wolfPaar: function (x, l) { l.push({ art: "wolf", x: x + 120, w: 36, h: 22, vx: -90 }); l.push({ art: "wolf", x: x + 185, w: 36, h: 22, vx: -90 }); return { holz: 0, breite: 110 }; },
+        // Ein Rabe fliegt in Kopfhöhe heran: unten bleiben (oder ganz hoch springen)
+        rabe: function (x, l) { l.push({ art: "rabe", x: x + 110, w: 28, vx: -70 }); l.push({ art: "holz", x: x + 30, y: HOLZ_BODEN }); return { holz: 1, breite: 60 }; },
+        // Ein Rabe schwebt über dem Stein: ein kleiner Sprung reicht nicht, nur ein hoher
+        steinRabe: function (x, l) {
+          l.push({ art: "stein", x: x, w: 28, h: 22 }); l.push({ art: "rabe", x: x, w: 28, vx: 0 });
+          l.push({ art: "holz", x: x + 2, y: HOLZ_GANZ_HOCH });
+          return { holz: 1, breite: 30 };
+        },
+        grube: function (x, l) { l.push({ art: "grube", x: x, w: 90 }); l.push({ art: "holz", x: x + 32, y: HOLZ_NIEDRIG }); return { holz: 1, breite: 90 }; },
+        grubeRabe: function (x, l) { l.push({ art: "grube", x: x, w: 84 }); l.push({ art: "rabe", x: x + 28, w: 28, vx: 0 }); return { holz: 0, breite: 84 }; },
+        holzBoden: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_BODEN }); l.push({ art: "holz", x: x + 46, y: HOLZ_BODEN }); return { holz: 2, breite: 72 }; },
+        holzNiedrig: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_NIEDRIG }); return { holz: 1, breite: 26 }; },
+        holzHoch: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_HOCH }); return { holz: 1, breite: 26 }; },
         holzBogen: function (x, l) {
           l.push({ art: "holz", x: x, y: BODEN - 38 }); l.push({ art: "holz", x: x + 40, y: BODEN - 58 }); l.push({ art: "holz", x: x + 80, y: BODEN - 38 });
           return { holz: 3, breite: 106 };
         }
       };
-      var GEWICHTE = { stein: 2, steinMitHolz: 3, doppelstein: 3, wolf: 3, wolfPaar: 2, hecke: 3, heckeMitHolz: 3, ast: 2, steinAst: 3, holzBoden: 1, holzNiedrig: 2, holzHoch: 3, holzBogen: 2 };
+      var GEWICHTE = {
+        stein: 2, steinMitHolz: 3, doppelstein: 3, wolf: 2, wolfPaar: 2, fass: 2, hecke: 2, heckeMitHolz: 3, ast: 2, steinAst: 3,
+        rabe: 2, steinRabe: 3, grube: 3, grubeRabe: 2, holzBoden: 1, holzNiedrig: 1, holzHoch: 2, holzBogen: 2
+      };
 
       function probeHolz(name) { return MUSTER[name](0, []).holz; }
       function musterWaehlen(rest) {
@@ -111,7 +138,7 @@
       // Zwei Durchgänge: Der erste schätzt die Streckenlänge, damit im zweiten das Tempo an jeder Stelle stimmt
       // (Abstände hängen vom Tempo ab, das Tempo von der Gesamtlänge).
       function streckeBauen() {
-        var schaetzung = 7000, liste, x;
+        var schaetzung = 8000, liste, x;
         for (var durchgang = 0; durchgang < 2; durchgang++) {
           grabenX = schaetzung;
           liste = []; x = 380;
@@ -123,7 +150,7 @@
             holzZahl += e.holz;
             letztes = name;
             // Abstand zum nächsten Muster: knapp genug Zeit für einen hohen Sprung plus Reaktion
-            x += e.breite + tempoBei(x) * zufall(0.65, 0.95);
+            x += e.breite + tempoBei(x) * zufall(0.6, 0.9);
           }
           schaetzung = x + 220;
         }
@@ -135,8 +162,8 @@
         welt = streckeBauen();
         kamera = 0;
         reiter = { y: BODEN, vy: 0, amBoden: true, x: RX, gebremst: false };
-        holz = 0; unverwundbar = 0; teile = []; texte = []; staub = []; wackeln = 0;
-        bauFortschritt = 0; gedrueckt = false; sprungPuffer = 0;
+        holz = 0; unverwundbar = 0; teile = []; texte = []; staub = []; funken = []; wackeln = 0; blitz = 0;
+        bauFortschritt = 0; gedrueckt = false; sprungPuffer = 0; zeit = 0; laufPhase = 0; treffer = 0;
         phase = "bereit";
         meldung.textContent = "";
         knopf.textContent = "Losreiten";
@@ -190,6 +217,9 @@
       function box(e, sx) {
         if (e.art === "holz") return { l: sx, r: sx + 26, o: e.y - 8, u: e.y + 8 };
         if (e.art === "ast") return { l: sx + 4, r: sx + e.w - 4, o: 0, u: AST_UNTEN };
+        if (e.art === "rabe") return { l: sx + 2, r: sx + e.w - 2, o: RABE_Y - 8, u: RABE_Y + 7 };
+        // In die Grube fällt nur, wer mitten darin den Boden berührt
+        if (e.art === "grube") return { l: sx + 16, r: sx + e.w - 16, o: BODEN - 3, u: BODEN + 20 };
         return { l: sx + 4, r: sx + e.w - 4, o: BODEN - e.h + 4, u: BODEN };
       }
 
@@ -204,27 +234,34 @@
       function getroffen() {
         var verlust = Math.min(VERLUST, holz);
         holz -= verlust;
+        treffer++;
         unverwundbar = 1.1;
         wackeln = 0.35;
+        blitz = 0.3;
         for (var i = 0; i < verlust; i++) teile.push({ x: reiter.x + 26, y: reiter.y - 30, vx: -60 - Math.random() * 140, vy: -260 - Math.random() * 160, leben: 1.1 });
         texte.push({ x: reiter.x + 20, y: reiter.y - 64, text: verlust ? "-" + verlust : "Autsch!", farbe: "#ff6b6b", leben: 0.9 });
         if (navigator.vibrate) navigator.vibrate(90);
       }
 
       function aktualisieren(dt) {
+        zeit += dt;
         if (!reiter.amBoden) {
           reiter.vy += GRAVITATION * dt;
           reiter.y += reiter.vy * dt;
           if (reiter.y >= BODEN) {
             reiter.y = BODEN; reiter.vy = 0; reiter.amBoden = true;
+            for (var d = 0; d < 6; d++) staub.push({ x: reiter.x + 10 + d * 6, y: BODEN - 2, vx: zufall(40, 160), leben: 0.5, r: zufall(2, 4) });
             if (sprungPuffer > 0 && phase === "laeuft") { absprung(); if (!gedrueckt) loslassen(); }
           }
         }
         if (sprungPuffer > 0) sprungPuffer -= dt;
         if (unverwundbar > 0) unverwundbar -= dt;
         if (wackeln > 0) wackeln -= dt;
+        if (blitz > 0) blitz -= dt;
         teile.forEach(function (t) { t.vy += GRAVITATION * 0.6 * dt; t.x += t.vx * dt; t.y += t.vy * dt; t.leben -= dt; });
         teile = teile.filter(function (t) { return t.leben > 0; });
+        funken.forEach(function (f) { f.x += f.vx * dt; f.y += f.vy * dt; f.vy += 300 * dt; f.leben -= dt; });
+        funken = funken.filter(function (f) { return f.leben > 0; });
         texte.forEach(function (t) { t.y -= 40 * dt; t.leben -= dt; });
         texte = texte.filter(function (t) { return t.leben > 0; });
         staub.forEach(function (s) { s.x -= s.vx * dt; s.y -= 12 * dt; s.leben -= dt; });
@@ -233,18 +270,20 @@
         if (phase === "laeuft") {
           var v = tempoBei(kamera);
           kamera += v * dt;
+          laufPhase += v * dt / 15;
           if (reiter.amBoden && Math.random() < 0.5) staub.push({ x: reiter.x + 8, y: BODEN - 2, vx: v * 0.3, leben: 0.4, r: zufall(1.5, 3) });
           var b = trefferbox();
           welt.forEach(function (e) {
             if (e.weg) return;
             var sx = e.x - kamera;
-            // Wölfe laufen erst los, wenn sie ins Bild kommen
+            // Wölfe, Fässer und Raben setzen sich erst in Bewegung, wenn sie ins Bild kommen
             if (e.vx && sx < W + 40) { e.x += e.vx * dt; sx = e.x - kamera; }
-            if (sx > W || sx < -80) return;
+            if (sx > W || sx < -100) return;
             if (e.art === "holz") {
               if (ueberlappt(b, box(e, sx))) {
                 e.weg = true; holz++;
                 texte.push({ x: sx, y: e.y - 12, text: "+1", farbe: "#ffe27a", leben: 0.7 });
+                for (var f = 0; f < 7; f++) funken.push({ x: sx + 12, y: e.y, vx: zufall(-90, 90), vy: zufall(-150, -30), leben: zufall(0.3, 0.6) });
               }
             } else if (unverwundbar <= 0 && ueberlappt(b, box(e, sx))) {
               getroffen();
@@ -256,6 +295,7 @@
           }
         } else if (phase === "ankunft") {
           reiter.x = Math.min(reiter.x + 90 * dt, GRABEN_SCHIRM - 54);
+          laufPhase += 90 * dt / 12;
           if (reiter.x >= GRABEN_SCHIRM - 54) phase = "bauen";
         } else if (phase === "bauen") {
           var ziel = Math.min(holz, HOLZ_NOETIG);
@@ -271,6 +311,7 @@
           }
         } else if (phase === "ueberqueren") {
           reiter.x += 90 * dt;
+          laufPhase += 90 * dt / 12;
           if (reiter.x >= GRABEN_SCHIRM + 80) {
             phase = "fertig";
             meldung.textContent = "Der Ritter hat die Burg erreicht!";
@@ -280,138 +321,358 @@
       }
 
       // ---------- Zeichnen ----------
-      function holzZeichnen(x, y) {
-        g.fillStyle = "#8a5a2b"; g.fillRect(x, y - 6, 24, 12);
-        g.fillStyle = "#6e4420"; g.fillRect(x + 4, y - 3, 14, 2);
-        g.fillStyle = "#d9a86c"; g.beginPath(); g.ellipse(x + 24, y, 4, 6, 0, 0, Math.PI * 2); g.fill();
-        g.strokeStyle = "#8a5a2b"; g.lineWidth = 1; g.beginPath(); g.ellipse(x + 24, y, 2, 3, 0, 0, Math.PI * 2); g.stroke();
+      function farbe(hex) { var n = parseInt(hex.slice(1), 16); return [n >> 16, (n >> 8) & 255, n & 255]; }
+      // Mischt zwei Farben: t = 0 Tag, t = 1 Abend
+      function misch(a, b, t, alpha) {
+        var x = farbe(a), y = farbe(b);
+        var c = [0, 1, 2].map(function (i) { return Math.round(x[i] + (y[i] - x[i]) * t); });
+        return alpha === undefined ? "rgb(" + c.join(",") + ")" : "rgba(" + c.join(",") + "," + alpha + ")";
+      }
+      function kreis(x, y, r) { g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill(); }
+      function oval(x, y, rx, ry, w) { g.beginPath(); g.ellipse(x, y, rx, ry, w || 0, 0, Math.PI * 2); g.fill(); }
+      function rundRechteck(x, y, w, h, r) {
+        g.beginPath();
+        g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r);
+        g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath();
       }
 
+      function himmelZeichnen(t) {
+        var himmel = g.createLinearGradient(0, 0, 0, BODEN);
+        himmel.addColorStop(0, misch("#4fa9f0", "#3a2d72", t));
+        himmel.addColorStop(0.6, misch("#9fd6ff", "#c4618a", t));
+        himmel.addColorStop(1, misch("#e2f4ff", "#ffb36b", t));
+        g.fillStyle = himmel; g.fillRect(-5, -5, W + 10, H + 10);
+        // Die Sonne sinkt, je näher die Burg kommt
+        var sx = 330 - 30 * t, sy = 34 + 92 * t, sr = 16 + 6 * t;
+        var schein = g.createRadialGradient(sx, sy, sr * 0.5, sx, sy, sr * 3.2);
+        schein.addColorStop(0, misch("#fff6b0", "#ff8a4c", t, 0.55)); schein.addColorStop(1, misch("#fff6b0", "#ff8a4c", t, 0));
+        g.fillStyle = schein; kreis(sx, sy, sr * 3.2);
+        g.fillStyle = misch("#fff2a0", "#ff6a3d", t); kreis(sx, sy, sr);
+        // Wolken ziehen langsam vorbei
+        for (var i = 0; i < 5; i++) {
+          var wx = ((i * 150 - kamera * 0.08 - zeit * 5) % 600 + 600) % 600 - 90, wy = 22 + rausch(i) * 42, gr = 0.7 + rausch(i + 9) * 0.6;
+          g.fillStyle = misch("#ffffff", "#ffd2c4", t, 0.9);
+          oval(wx + 22 * gr, wy, 22 * gr, 9 * gr); kreis(wx + 12 * gr, wy - 2, 9 * gr); kreis(wx + 28 * gr, wy - 6 * gr, 12 * gr);
+        }
+      }
+
+      function landschaftZeichnen(t) {
+        var x, o;
+        // Ferne Berge
+        o = kamera * 0.12;
+        g.fillStyle = misch("#8fb6dc", "#6a4f8f", t);
+        g.beginPath(); g.moveTo(-5, BODEN);
+        for (x = -5; x <= W + 10; x += 8) g.lineTo(x, BODEN - 72 - 22 * Math.sin((x + o) / 90) - 12 * Math.sin((x + o) / 33));
+        g.lineTo(W + 10, BODEN); g.closePath(); g.fill();
+        // Die Burg am Horizont wächst, je näher man kommt
+        var gr = 0.45 + 0.6 * Math.min(1, kamera / (grabenX - GRABEN_SCHIRM)), bx = 300, by = BODEN - 52;
+        g.fillStyle = misch("#6f8db0", "#4a3366", t);
+        g.fillRect(bx - 22 * gr, by - 26 * gr, 44 * gr, 26 * gr);
+        [-24, 14].forEach(function (d) {
+          g.fillRect(bx + d * gr, by - 40 * gr, 10 * gr, 40 * gr);
+          g.beginPath(); g.moveTo(bx + (d - 2) * gr, by - 40 * gr); g.lineTo(bx + (d + 5) * gr, by - 52 * gr); g.lineTo(bx + (d + 12) * gr, by - 40 * gr); g.fill();
+        });
+        g.fillRect(bx - 5 * gr, by - 48 * gr, 10 * gr, 22 * gr);
+        g.beginPath(); g.moveTo(bx - 7 * gr, by - 48 * gr); g.lineTo(bx, by - 62 * gr); g.lineTo(bx + 7 * gr, by - 48 * gr); g.fill();
+        g.fillStyle = "#d62b2b"; g.fillRect(bx, by - 70 * gr, 7 * gr, 4 * gr);
+        // Hügel
+        o = kamera * 0.3;
+        g.fillStyle = misch("#93d47c", "#5f7f4a", t);
+        g.beginPath(); g.moveTo(-5, BODEN);
+        for (x = -5; x <= W + 10; x += 8) g.lineTo(x, BODEN - 36 - 14 * Math.sin((x + o) / 60) - 6 * Math.sin((x + o) / 23));
+        g.lineTo(W + 10, BODEN); g.closePath(); g.fill();
+        // Waldrand: Tannen und Laubbäume
+        o = kamera * 0.55;
+        for (var i = Math.floor(o / 46) - 1; i < Math.floor(o / 46) + 11; i++) {
+          var tx = i * 46 - o + rausch(i) * 20, gross = 0.75 + rausch(i + 3) * 0.5;
+          g.fillStyle = misch("#5a3820", "#3a2418", t); g.fillRect(tx - 2, BODEN - 14 * gross, 4, 14 * gross);
+          if (rausch(i + 7) < 0.5) {
+            g.fillStyle = misch("#2e7a46", "#25503a", t);
+            for (var s = 0; s < 3; s++) {
+              g.beginPath(); g.moveTo(tx - (13 - s * 3) * gross, BODEN - (10 + s * 11) * gross); g.lineTo(tx, BODEN - (34 + s * 11) * gross); g.lineTo(tx + (13 - s * 3) * gross, BODEN - (10 + s * 11) * gross); g.fill();
+            }
+          } else {
+            g.fillStyle = misch("#45a653", "#3a6a3a", t);
+            kreis(tx, BODEN - 26 * gross, 13 * gross); kreis(tx - 8 * gross, BODEN - 18 * gross, 9 * gross); kreis(tx + 8 * gross, BODEN - 18 * gross, 9 * gross);
+            g.fillStyle = misch("#6cc777", "#4f7f4a", t, 0.8); kreis(tx - 3 * gross, BODEN - 30 * gross, 6 * gross);
+          }
+        }
+      }
+
+      function bodenZeichnen(t) {
+        var erde = g.createLinearGradient(0, BODEN, 0, H);
+        erde.addColorStop(0, misch("#b0854e", "#8a5f3c", t)); erde.addColorStop(1, misch("#7a5530", "#553620", t));
+        g.fillStyle = erde; g.fillRect(-5, BODEN, W + 10, H - BODEN + 5);
+        // Steinchen und Spurrillen auf dem Weg
+        var start = Math.floor(kamera / 31);
+        for (var i = start - 1; i < start + 15; i++) {
+          var px = i * 31 - kamera + rausch(i) * 14, py = BODEN + 12 + rausch(i + 1) * 20;
+          g.fillStyle = misch("#8a6a44", "#5e4330", t, 0.9); oval(px, py, 2 + rausch(i + 2) * 3, 1.4 + rausch(i + 2) * 1.4);
+        }
+        // Grasnarbe mit Halmen und Blumen
+        g.fillStyle = misch("#5cbf5c", "#4a8a4a", t); g.fillRect(-5, BODEN, W + 10, 6);
+        start = Math.floor(kamera / 7);
+        for (var j = start - 1; j < start + 60; j++) {
+          var hx = j * 7 - kamera, hh = 3 + rausch(j) * 4;
+          g.beginPath(); g.moveTo(hx, BODEN + 1); g.lineTo(hx + 2, BODEN - hh); g.lineTo(hx + 4, BODEN + 1); g.fill();
+          if (rausch(j + 50) < 0.12) {
+            g.fillStyle = ["#ff6b8b", "#ffffff", "#ffd84a"][Math.floor(rausch(j + 60) * 3)];
+            kreis(hx + 2, BODEN - hh - 1, 1.8);
+            g.fillStyle = misch("#5cbf5c", "#4a8a4a", t);
+          }
+        }
+      }
+
+      function holzZeichnen(x, y, leuchten) {
+        if (leuchten) {
+          var s = g.createRadialGradient(x + 13, y, 2, x + 13, y, 22);
+          s.addColorStop(0, "rgba(255,226,122,0.55)"); s.addColorStop(1, "rgba(255,226,122,0)");
+          g.fillStyle = s; kreis(x + 13, y, 22);
+        }
+        g.fillStyle = "#8a5a2b"; rundRechteck(x, y - 6, 24, 12, 4); g.fill();
+        g.fillStyle = "#6e4420"; g.fillRect(x + 4, y - 3, 14, 2); g.fillRect(x + 8, y + 2, 10, 1.5);
+        g.fillStyle = "#e0b47a"; oval(x + 24, y, 4, 6);
+        g.strokeStyle = "#9a6532"; g.lineWidth = 1; g.beginPath(); g.ellipse(x + 24, y, 2, 3, 0, 0, Math.PI * 2); g.stroke();
+      }
+
+      function schattenZeichnen(x, w) { g.fillStyle = "rgba(0,0,0,0.22)"; oval(x + w / 2, BODEN + 1, w / 2 + 3, 3); }
+
       function steinZeichnen(e, sx) {
-        g.fillStyle = "#8d8f99";
+        schattenZeichnen(sx, e.w);
+        g.fillStyle = "#7d808b";
         g.beginPath();
-        g.moveTo(sx, BODEN); g.lineTo(sx + 5, BODEN - e.h + 6); g.lineTo(sx + e.w * 0.45, BODEN - e.h); g.lineTo(sx + e.w * 0.85, BODEN - e.h + 8); g.lineTo(sx + e.w, BODEN);
+        g.moveTo(sx, BODEN); g.lineTo(sx + 4, BODEN - e.h + 7); g.quadraticCurveTo(sx + e.w * 0.3, BODEN - e.h - 2, sx + e.w * 0.55, BODEN - e.h);
+        g.quadraticCurveTo(sx + e.w * 0.9, BODEN - e.h + 3, sx + e.w, BODEN);
         g.closePath(); g.fill();
-        g.fillStyle = "#b3b6c2";
-        g.beginPath(); g.moveTo(sx + 8, BODEN - e.h + 8); g.lineTo(sx + e.w * 0.45, BODEN - e.h + 3); g.lineTo(sx + e.w * 0.6, BODEN - e.h + 10); g.closePath(); g.fill();
+        g.fillStyle = "#a7abb7";
+        g.beginPath(); g.moveTo(sx + 7, BODEN - e.h + 8); g.quadraticCurveTo(sx + e.w * 0.35, BODEN - e.h + 1, sx + e.w * 0.6, BODEN - e.h + 4); g.lineTo(sx + e.w * 0.4, BODEN - e.h + 10); g.closePath(); g.fill();
+        g.fillStyle = "#5fa85a"; oval(sx + e.w * 0.3, BODEN - 3, 6, 3); oval(sx + e.w * 0.75, BODEN - 2, 5, 2.5);
       }
 
       function heckeZeichnen(e, sx) {
-        g.fillStyle = "#24572a";
-        g.fillRect(sx, BODEN - e.h + 6, e.w, e.h - 6);
-        g.fillStyle = "#2f7d3a";
-        for (var i = 0; i < 8; i++) { g.beginPath(); g.arc(sx + 8 + (i % 2) * 18, BODEN - e.h + 9 + Math.floor(i / 2) * 16, 9, 0, Math.PI * 2); g.fill(); }
+        schattenZeichnen(sx, e.w);
+        var oben = BODEN - e.h;
+        g.fillStyle = "#1f4d26"; rundRechteck(sx, oben + 6, e.w, e.h - 6, 8); g.fill();
+        for (var i = 0; i < 10; i++) {
+          g.fillStyle = i % 3 === 0 ? "#3c9447" : "#2f7d3a";
+          kreis(sx + 7 + (i % 2) * 20, oben + 10 + Math.floor(i / 2) * 15, 10);
+        }
+        g.fillStyle = "#58b765"; kreis(sx + 10, oben + 7, 4); kreis(sx + 26, oben + 22, 3);
         g.fillStyle = "#d62b2b";
-        [[10, 14], [24, 30], [12, 44], [26, 54]].forEach(function (p) { g.beginPath(); g.arc(sx + p[0], BODEN - e.h + p[1], 2, 0, Math.PI * 2); g.fill(); });
+        [[10, 16], [25, 30], [12, 46], [27, 58], [16, 68]].forEach(function (p) { kreis(sx + p[0], oben + p[1], 2.2); });
       }
 
       function astZeichnen(e, sx) {
-        g.strokeStyle = "#6a3f25"; g.lineWidth = 7; g.lineCap = "round";
-        g.beginPath(); g.moveTo(sx - 10, 0); g.quadraticCurveTo(sx + 10, AST_UNTEN - 30, sx + e.w, AST_UNTEN - 6); g.stroke();
-        g.fillStyle = "#3f9e4d";
-        [[15, -26], [35, -16], [55, -8], [28, -4], [48, 2], [8, -10]].forEach(function (p) {
-          g.beginPath(); g.ellipse(sx + p[0], AST_UNTEN + p[1] - 4, 11, 7, 0.4, 0, Math.PI * 2); g.fill();
+        g.strokeStyle = "#5a3520"; g.lineWidth = 8; g.lineCap = "round";
+        g.beginPath(); g.moveTo(sx - 10, -5); g.quadraticCurveTo(sx + 10, AST_UNTEN - 30, sx + e.w, AST_UNTEN - 6); g.stroke();
+        g.strokeStyle = "#7a4b2e"; g.lineWidth = 3;
+        g.beginPath(); g.moveTo(sx - 8, -5); g.quadraticCurveTo(sx + 12, AST_UNTEN - 33, sx + e.w - 2, AST_UNTEN - 8); g.stroke();
+        [[15, -26], [35, -16], [55, -8], [28, -4], [48, 2], [8, -10], [64, -2]].forEach(function (p, i) {
+          g.fillStyle = i % 2 ? "#3f9e4d" : "#4fb85c";
+          oval(sx + p[0], AST_UNTEN + p[1] - 4, 11, 7, 0.4 + Math.sin(zeit * 3 + i) * 0.08);
         });
       }
 
       function wolfZeichnen(e, sx) {
-        var lauf = Math.sin((e.x + kamera) / 9) * 3;
-        g.fillStyle = "#6b6e78";
-        g.beginPath(); g.ellipse(sx + 20, BODEN - 13, 15, 7, 0, 0, Math.PI * 2); g.fill();
-        g.beginPath(); g.ellipse(sx + 4, BODEN - 18, 7, 5, -0.3, 0, Math.PI * 2); g.fill();
-        g.beginPath(); g.moveTo(sx + 2, BODEN - 18); g.lineTo(sx - 8, BODEN - 13); g.lineTo(sx + 4, BODEN - 12); g.closePath(); g.fill();
-        g.beginPath(); g.moveTo(sx + 2, BODEN - 22); g.lineTo(sx + 5, BODEN - 30); g.lineTo(sx + 9, BODEN - 21); g.closePath(); g.fill();
-        g.beginPath(); g.moveTo(sx + 33, BODEN - 16); g.lineTo(sx + 43, BODEN - 23); g.lineTo(sx + 35, BODEN - 11); g.closePath(); g.fill();
-        g.fillRect(sx + 9 + lauf, BODEN - 8, 3, 8); g.fillRect(sx + 27 - lauf, BODEN - 8, 3, 8);
-        g.fillStyle = "#ffe27a"; g.fillRect(sx + 1, BODEN - 20, 2, 2);
+        var lauf = Math.sin(zeit * 20 + e.x * 0.05);
+        schattenZeichnen(sx + 4, 32);
+        g.strokeStyle = "#555863"; g.lineWidth = 3.5; g.lineCap = "round";
+        [[11, 1], [16, -1], [27, -1], [32, 1]].forEach(function (b) {
+          g.beginPath(); g.moveTo(sx + b[0], BODEN - 10); g.lineTo(sx + b[0] + lauf * 4 * b[1], BODEN - 1); g.stroke();
+        });
+        g.fillStyle = "#6f727e"; oval(sx + 21, BODEN - 14, 15, 7.5);
+        g.fillStyle = "#9a9daa"; oval(sx + 20, BODEN - 10, 10, 3);
+        g.fillStyle = "#6f727e";
+        oval(sx + 5, BODEN - 19, 7.5, 5.5, -0.3);
+        g.beginPath(); g.moveTo(sx + 2, BODEN - 19); g.lineTo(sx - 9, BODEN - 14); g.lineTo(sx + 4, BODEN - 12); g.closePath(); g.fill();
+        g.beginPath(); g.moveTo(sx + 3, BODEN - 23); g.lineTo(sx + 6, BODEN - 31); g.lineTo(sx + 10, BODEN - 22); g.closePath(); g.fill();
+        g.beginPath(); g.moveTo(sx + 34, BODEN - 17); g.quadraticCurveTo(sx + 44, BODEN - 26 + lauf * 2, sx + 46, BODEN - 20); g.lineTo(sx + 35, BODEN - 12); g.closePath(); g.fill();
+        g.fillStyle = "#1b1b1b"; kreis(sx - 8, BODEN - 14, 1.5);
+        g.fillStyle = "#ff3b3b"; kreis(sx + 2.5, BODEN - 21, 1.4);
+      }
+
+      function fassZeichnen(e, sx) {
+        var cx = sx + 12, cy = BODEN - 12, w = -e.x / 12;
+        schattenZeichnen(sx, 24);
+        g.fillStyle = "#9a6234"; kreis(cx, cy, 12);
+        g.strokeStyle = "#6e4420"; g.lineWidth = 1.5;
+        for (var i = 0; i < 3; i++) {
+          var a = w + i * Math.PI / 3;
+          g.beginPath(); g.moveTo(cx + Math.cos(a) * 11, cy + Math.sin(a) * 11); g.lineTo(cx - Math.cos(a) * 11, cy - Math.sin(a) * 11); g.stroke();
+        }
+        g.strokeStyle = "#4b4f57"; g.lineWidth = 2.5; g.beginPath(); g.arc(cx, cy, 11, 0, Math.PI * 2); g.stroke();
+        g.lineWidth = 1.5; g.beginPath(); g.arc(cx, cy, 6, 0, Math.PI * 2); g.stroke();
+      }
+
+      function rabeZeichnen(e, sx) {
+        var y = RABE_Y + Math.sin(zeit * 5 + e.x) * 1.5, schlag = Math.sin(zeit * 18 + e.x);
+        g.fillStyle = "#22222e";
+        g.beginPath(); g.moveTo(sx + 22, y); g.lineTo(sx + 31, y - 4); g.lineTo(sx + 31, y + 4); g.closePath(); g.fill();
+        oval(sx + 15, y, 11, 6);
+        kreis(sx + 5, y - 3, 5);
+        g.fillStyle = "#3a3a4e";
+        g.beginPath(); g.moveTo(sx + 10, y - 2); g.lineTo(sx + 22, y - 2); g.lineTo(sx + 18, y - 2 - 13 * schlag); g.closePath(); g.fill();
+        g.fillStyle = "#f2a33a"; g.beginPath(); g.moveTo(sx + 1, y - 4); g.lineTo(sx - 6, y - 2); g.lineTo(sx + 1, y - 1); g.closePath(); g.fill();
+        g.fillStyle = "#fff"; kreis(sx + 4, y - 4.5, 1.6);
+        g.fillStyle = "#000"; kreis(sx + 3.6, y - 4.5, 0.8);
+      }
+
+      function grubeZeichnen(e, sx) {
+        var tiefe = g.createLinearGradient(0, BODEN, 0, H);
+        tiefe.addColorStop(0, "#4a2f18"); tiefe.addColorStop(1, "#140b05");
+        g.fillStyle = tiefe;
+        g.beginPath(); g.moveTo(sx, BODEN - 1); g.lineTo(sx + e.w, BODEN - 1); g.lineTo(sx + e.w - 9, H + 5); g.lineTo(sx + 9, H + 5); g.closePath(); g.fill();
+        // Schlamm unten mit Blasen
+        g.fillStyle = "#4e3a22"; oval(sx + e.w / 2, BODEN + 27, e.w / 2 - 12, 4);
+        g.fillStyle = "rgba(160,130,90,0.6)";
+        kreis(sx + e.w * 0.3, BODEN + 24, 1.5 + Math.abs(Math.sin(zeit * 2 + e.x)) * 1.5); kreis(sx + e.w * 0.7, BODEN + 25, 1.2 + Math.abs(Math.sin(zeit * 3 + e.x)) * 1.2);
+        g.fillStyle = "#5cbf5c"; g.fillRect(sx - 3, BODEN - 1, 6, 4); g.fillRect(sx + e.w - 3, BODEN - 1, 6, 4);
+      }
+
+      function reiterZeichnen() {
+        var hoehe = BODEN - reiter.y, s = Math.max(0.35, 1 - hoehe / 160);
+        g.fillStyle = "rgba(0,0,0," + (0.28 * s).toFixed(2) + ")"; oval(reiter.x + 27, BODEN + 1, 24 * s, 4 * s);
+        if (unverwundbar > 0 && Math.floor(unverwundbar * 12) % 2 === 0) return;
+        if (!koerperBild.complete) return;
+        var bewegt = phase === "laeuft" || phase === "ankunft" || phase === "ueberqueren";
+        var huepf = reiter.amBoden && bewegt ? Math.abs(Math.sin(laufPhase)) * 2.5 : 0;
+        var neigung = reiter.amBoden ? 0 : Math.max(-0.3, Math.min(0.3, reiter.vy / 2200));
+        g.save();
+        g.translate(reiter.x + 27, reiter.y - 22 - huepf);
+        g.rotate(neigung);
+        g.translate(-31, -36);
+        g.scale(0.62, 0.62);
+        // Galopp: Vorder- und Hinterbeine schwingen gegeneinander, im Sprung werden sie gestreckt
+        BEINE.forEach(function (b) {
+          var w;
+          if (!reiter.amBoden) w = b.vorn ? -0.75 : 0.65;
+          else if (bewegt) w = 0.5 * Math.sin(laufPhase * 2 + (b.vorn ? 0 : Math.PI) + b.versatz);
+          else w = 0;
+          g.save();
+          g.translate(b.x, b.y);
+          g.rotate(w);
+          g.fillStyle = b.farbe; rundRechteck(-3, 0, 6, b.l, 2); g.fill();
+          g.fillStyle = "#2b1d1d"; rundRechteck(-4, b.l - 4, 8, 4, 1); g.fill();
+          g.restore();
+        });
+        g.drawImage(koerperBild, 0, 0, 100, 100);
+        g.restore();
+      }
+
+      function grabenZeichnen(gx, t) {
+        var wasser = g.createLinearGradient(0, BODEN, 0, H);
+        wasser.addColorStop(0, misch("#3f8fd8", "#3a5fa0", t)); wasser.addColorStop(1, misch("#1d4a80", "#1a2f5a", t));
+        g.fillStyle = wasser; g.fillRect(gx, BODEN + 3, 80, H - BODEN);
+        g.strokeStyle = "rgba(255,255,255,0.5)"; g.lineWidth = 1.5;
+        for (var r = 0; r < 2; r++) {
+          g.beginPath();
+          for (var x = 0; x <= 80; x += 4) g.lineTo(gx + x, BODEN + 8 + r * 12 + Math.sin(x / 8 + zeit * 3 + r * 2) * 1.5);
+          g.stroke();
+        }
+        g.fillStyle = "#6e5236"; g.fillRect(gx - 2, BODEN, 4, H - BODEN); g.fillRect(gx + 78, BODEN, 4, H - BODEN);
+        var erde = g.createLinearGradient(0, BODEN, 0, H);
+        erde.addColorStop(0, misch("#b0854e", "#8a5f3c", t)); erde.addColorStop(1, misch("#7a5530", "#553620", t));
+        g.fillStyle = erde; g.fillRect(gx + 80, BODEN, W, H - BODEN + 5);
+        g.fillStyle = misch("#5cbf5c", "#4a8a4a", t); g.fillRect(gx + 80, BODEN, W, 6);
+        if (burgBild.complete) g.drawImage(burgBild, gx + 70, BODEN - 122, 132, 132);
+        var bretter = Math.floor(bauFortschritt), breite = 80 / HOLZ_NOETIG;
+        for (var b = 0; b < bretter; b++) {
+          g.fillStyle = b % 2 ? "#8a5a2b" : "#a06e38"; g.fillRect(gx + b * breite, BODEN - 2, breite - 0.6, 7);
+          g.fillStyle = "#5a3820"; g.fillRect(gx + b * breite, BODEN + 4, breite - 0.6, 1.5);
+        }
+        if (bretter >= HOLZ_NOETIG) {
+          g.strokeStyle = "#c9a26b"; g.lineWidth = 1.5;
+          g.beginPath(); g.moveTo(gx, BODEN - 14); g.quadraticCurveTo(gx + 40, BODEN - 6, gx + 80, BODEN - 14); g.stroke();
+          g.fillStyle = "#6e4420"; g.fillRect(gx - 2, BODEN - 17, 4, 17); g.fillRect(gx + 78, BODEN - 17, 4, 17);
+        }
+      }
+
+      function anzeigeZeichnen() {
+        g.fillStyle = "rgba(0,0,0,0.55)"; rundRechteck(8, 8, 96, 26, 13); g.fill();
+        holzZeichnen(16, 21);
+        g.font = "bold 14px sans-serif"; g.textBaseline = "middle"; g.textAlign = "left";
+        g.fillStyle = holz >= HOLZ_NOETIG ? "#7dff9d" : "#fff";
+        g.fillText(holz + " / " + HOLZ_NOETIG, 48, 22);
+        // Weg zur Burg mit Ritter-Punkt
+        var anteil = Math.min(1, kamera / (grabenX - GRABEN_SCHIRM));
+        g.fillStyle = "rgba(0,0,0,0.4)"; rundRechteck(118, 17, 250, 8, 4); g.fill();
+        g.fillStyle = "#d62b2b"; rundRechteck(118, 17, Math.max(8, 250 * anteil), 8, 4); g.fill();
+        g.fillStyle = "#fff"; kreis(118 + 250 * anteil, 21, 5.5);
+        g.fillStyle = "#d62b2b"; kreis(118 + 250 * anteil, 21, 3);
+        // kleine Burg am Ziel
+        g.fillStyle = "#fff";
+        g.fillRect(374, 15, 16, 12); g.fillRect(372, 11, 5, 6); g.fillRect(380, 9, 4, 8); g.fillRect(387, 11, 5, 6);
+        g.fillStyle = "#d62b2b"; g.fillRect(382, 3, 6, 4);
       }
 
       function zeichnen() {
         g.save();
         if (wackeln > 0) g.translate(zufall(-3, 3), zufall(-3, 3));
         var v = phase === "laeuft" ? tempoBei(kamera) : 0;
+        var t = Math.min(1, kamera / (grabenX - GRABEN_SCHIRM)) * 0.9; // Tageszeit: vom Mittag in den Abend
 
-        var himmel = g.createLinearGradient(0, 0, 0, BODEN);
-        himmel.addColorStop(0, "#7cc8ff"); himmel.addColorStop(1, "#d6f0ff");
-        g.fillStyle = himmel; g.fillRect(-5, -5, W + 10, H + 10);
-        g.fillStyle = "#ffe27a"; g.beginPath(); g.arc(350, 36, 18, 0, Math.PI * 2); g.fill();
-        // Hügel und Bäume im Hintergrund bewegen sich langsamer: Tiefenwirkung
-        g.fillStyle = "#a9dc8f";
-        g.beginPath(); g.moveTo(0, BODEN);
-        for (var x = 0; x <= W; x += 10) g.lineTo(x, BODEN - 40 - 18 * Math.sin((x + kamera * 0.3) / 60));
-        g.lineTo(W, BODEN); g.closePath(); g.fill();
-        for (var t = 0; t < 6; t++) {
-          var tx = ((t * 97 - kamera * 0.55) % 480 + 480) % 480 - 40;
-          g.fillStyle = "#6a3f25"; g.fillRect(tx + 8, BODEN - 34, 5, 34);
-          g.fillStyle = "#4fae5a"; g.beginPath(); g.arc(tx + 10, BODEN - 42, 14, 0, Math.PI * 2); g.fill();
-        }
-
-        // Boden
-        g.fillStyle = "#8b6b3e"; g.fillRect(-5, BODEN, W + 10, H - BODEN + 5);
-        g.fillStyle = "#5cb85c"; g.fillRect(-5, BODEN, W + 10, 7);
-        g.fillStyle = "#7a5c33";
-        for (var i = 0; i < 12; i++) { var bx = i * 40 - (kamera % 40); g.fillRect(bx, BODEN + 14, 18, 3); g.fillRect(bx + 20, BODEN + 24, 12, 3); }
+        himmelZeichnen(t);
+        landschaftZeichnen(t);
+        bodenZeichnen(t);
 
         // Fahrtwind bei hohem Tempo
-        if (v > 230) {
-          g.strokeStyle = "rgba(255,255,255," + ((v - 230) / 140).toFixed(2) + ")"; g.lineWidth = 1.5;
+        if (v > 250) {
+          g.strokeStyle = "rgba(255,255,255," + ((v - 250) / 200).toFixed(2) + ")"; g.lineWidth = 1.5;
           for (var s = 0; s < 6; s++) {
             var sy = 40 + ((s * 53) % 130), sxl = ((s * 131 - kamera * 1.6) % 460 + 460) % 460 - 30;
             g.beginPath(); g.moveTo(sxl, sy); g.lineTo(sxl + 26, sy); g.stroke();
           }
         }
 
-        // Burggraben, Brücke und Burg am Ende
         var gx = grabenX - kamera;
-        if (gx < W + 200) {
-          g.fillStyle = "#3b7fc4"; g.fillRect(gx, BODEN, 80, H - BODEN + 5);
-          g.fillStyle = "#5aa2e6"; g.fillRect(gx, BODEN + 4, 80, 3);
-          g.fillStyle = "#8b6b3e"; g.fillRect(gx + 80, BODEN, W, H - BODEN + 5);
-          g.fillStyle = "#5cb85c"; g.fillRect(gx + 80, BODEN, W, 7);
-          if (burgBild.complete) g.drawImage(burgBild, gx + 70, BODEN - 120, 130, 130);
-          var bretter = Math.floor(bauFortschritt), breite = 80 / HOLZ_NOETIG;
-          for (var b = 0; b < bretter; b++) { g.fillStyle = b % 2 ? "#8a5a2b" : "#9c6a35"; g.fillRect(gx + b * breite, BODEN - 2, breite - 0.5, 8); }
-        }
+        if (gx < W + 200) grabenZeichnen(gx, t);
 
-        // Hindernisse und Holz
+        // Gruben zuerst, damit alles andere darüber liegt
         welt.forEach(function (e) {
-          if (e.weg) return;
+          if (e.weg || e.art !== "grube") return;
           var sx = e.x - kamera;
-          if (sx < -90 || sx > W + 60) return;
-          if (e.art === "holz") holzZeichnen(sx, e.y);
+          if (sx > -110 && sx < W + 60) grubeZeichnen(e, sx);
+        });
+        welt.forEach(function (e) {
+          if (e.weg || e.art === "grube") return;
+          var sx = e.x - kamera;
+          if (sx < -100 || sx > W + 60) return;
+          if (e.art === "holz") holzZeichnen(sx, e.y + Math.sin(zeit * 4 + e.x) * 1.5, true);
           else if (e.art === "stein") steinZeichnen(e, sx);
           else if (e.art === "hecke") heckeZeichnen(e, sx);
           else if (e.art === "ast") astZeichnen(e, sx);
           else if (e.art === "wolf") wolfZeichnen(e, sx);
+          else if (e.art === "fass") fassZeichnen(e, sx);
+          else if (e.art === "rabe") rabeZeichnen(e, sx);
         });
 
-        // Staub und verlorenes Holz
-        staub.forEach(function (s) { g.fillStyle = "rgba(139,107,62," + Math.min(1, s.leben * 2).toFixed(2) + ")"; g.beginPath(); g.arc(s.x, s.y, s.r, 0, Math.PI * 2); g.fill(); });
+        // Staub, Funken und verlorenes Holz
+        staub.forEach(function (s) { g.fillStyle = "rgba(160,120,70," + Math.min(1, s.leben * 2).toFixed(2) + ")"; kreis(s.x, s.y, s.r); });
+        funken.forEach(function (f) { g.fillStyle = "rgba(255,230,120," + Math.min(1, f.leben * 3).toFixed(2) + ")"; kreis(f.x, f.y, 1.8); });
         teile.forEach(function (t) { g.globalAlpha = Math.max(0, Math.min(1, t.leben)); holzZeichnen(t.x, t.y); g.globalAlpha = 1; });
 
-        // Reiter (blinkt nach einem Treffer)
-        if (!(unverwundbar > 0 && Math.floor(unverwundbar * 12) % 2 === 0) && ritterBild.complete) {
-          var huepf = reiter.amBoden && (phase === "laeuft" || phase === "ankunft" || phase === "ueberqueren") ? Math.abs(Math.sin(kamera / 12 + reiter.x / 14)) * 2.5 : 0;
-          g.drawImage(ritterBild, reiter.x - 4, reiter.y - 58 - huepf, 62, 62);
-        }
+        reiterZeichnen();
 
         g.font = "bold 14px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
-        texte.forEach(function (t) { g.globalAlpha = Math.min(1, t.leben * 2); g.fillStyle = t.farbe; g.fillText(t.text, t.x + 12, t.y); g.globalAlpha = 1; });
-        g.textAlign = "left";
+        texte.forEach(function (t) {
+          g.globalAlpha = Math.min(1, t.leben * 2);
+          g.lineWidth = 3; g.strokeStyle = "rgba(0,0,0,0.5)"; g.strokeText(t.text, t.x + 12, t.y);
+          g.fillStyle = t.farbe; g.fillText(t.text, t.x + 12, t.y);
+          g.globalAlpha = 1;
+        });
 
-        // Anzeige oben: Holz und Strecke
-        g.fillStyle = "rgba(0,0,0,0.55)"; g.fillRect(8, 8, 118, 26);
-        holzZeichnen(14, 21);
-        g.fillStyle = holz >= HOLZ_NOETIG ? "#7dff9d" : "#fff";
-        g.fillText(holz + " / " + HOLZ_NOETIG, 46, 22);
-        var anteil = Math.min(1, kamera / (grabenX - GRABEN_SCHIRM));
-        g.fillStyle = "rgba(0,0,0,0.35)"; g.fillRect(140, 18, 250, 6);
-        g.fillStyle = "#d62b2b"; g.fillRect(140, 18, 250 * anteil, 6);
+        if (blitz > 0) {
+          var rand = g.createRadialGradient(W / 2, H / 2, 60, W / 2, H / 2, 260);
+          rand.addColorStop(0, "rgba(214,43,43,0)"); rand.addColorStop(1, "rgba(214,43,43," + (blitz * 2).toFixed(2) + ")");
+          g.fillStyle = rand; g.fillRect(-5, -5, W + 10, H + 10);
+        }
+
+        anzeigeZeichnen();
 
         if (phase === "bereit") {
           g.fillStyle = "rgba(0,0,0,0.5)"; g.fillRect(-5, -5, W + 10, H + 10);
           g.fillStyle = "#fff"; g.textAlign = "center";
-          g.font = "bold 18px sans-serif"; g.fillText("Tippe zum Losreiten", W / 2, H / 2);
+          g.font = "700 24px 'Barlow Condensed', sans-serif"; g.fillText("TIPPE ZUM LOSREITEN", W / 2, H / 2);
           g.textAlign = "left";
         }
         g.restore();
@@ -420,17 +681,24 @@
       // Nur für automatische Tests (Adresse mit ?test)
       if (/[?&]test\b/.test(location.search)) {
         window.spielTest = {
-          zustand: function () { return { phase: phase, kamera: kamera, reiter: reiter, holz: holz, welt: welt, tempo: tempoBei(kamera), grabenX: grabenX }; },
+          zustand: function () { return { phase: phase, kamera: kamera, reiter: reiter, holz: holz, welt: welt, tempo: tempoBei(kamera), grabenX: grabenX, treffer: treffer }; },
           druecken: druecken, loslassen: loslassen, neu: neu,
-          schritt: function (dt, ohneBild) { aktualisieren(dt); if (!ohneBild) zeichnen(); }
+          schritt: function (dt, ohneBild) { aktualisieren(dt); if (!ohneBild) zeichnen(); },
+          sichern: function () { return JSON.stringify({ welt: welt, kamera: kamera, reiter: reiter, holz: holz, unverwundbar: unverwundbar, gedrueckt: gedrueckt, sprungPuffer: sprungPuffer, phase: phase, treffer: treffer }); },
+          laden: function (s) {
+            var d = JSON.parse(s);
+            welt = d.welt; kamera = d.kamera; reiter = d.reiter; holz = d.holz; unverwundbar = d.unverwundbar;
+            gedrueckt = d.gedrueckt; sprungPuffer = d.sprungPuffer; phase = d.phase; treffer = d.treffer;
+          }
         };
       }
 
       window.addEventListener("resize", function () { vermessen(); zeichnen(); });
       vermessen();
       neu();
-      ritterBild.onload = zeichnen;
+      koerperBild.onload = zeichnen;
       burgBild.onload = zeichnen;
+      if (document.fonts) document.fonts.ready.then(zeichnen);
     })();
   </script>
 </body>
