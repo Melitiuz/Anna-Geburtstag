@@ -18,11 +18,16 @@
 
     <section class="spiele" id="spiele"></section>
 
-    <section class="karte statistik" style="margin-top:24px">
-      <div class="oben">Statistik</div>
-      <h2>Deine Versuche</h2>
-      <ul id="statistik"></ul>
-    </section>
+    <button class="knopf zweit breit" type="button" id="statistik-zeigen" style="margin-top:16px" aria-haspopup="dialog">📊 Statistik anzeigen</button>
+
+    <div class="overlay" id="statistik-fenster" hidden>
+      <section class="karte statistik" role="dialog" aria-modal="true" aria-labelledby="statistik-titel">
+        <div class="oben">Statistik</div>
+        <h2 id="statistik-titel">Deine Versuche</h2>
+        <ul id="statistik"></ul>
+        <button class="knopf breit" type="button" id="statistik-schliessen" style="margin-top:16px">Schließen</button>
+      </section>
+    </div>
 
     <section class="karte mitte" style="margin-top:24px">
       <div class="oben">Finale</div>
@@ -89,6 +94,18 @@
       gesamt.className = "gesamt";
       gesamt.innerHTML = '<span class="name">Insgesamt</span><span class="wert">' + summe + '</span><span class="info"></span>';
       statListe.appendChild(gesamt);
+
+      // Statistik als Fenster: per Knopf öffnen, per Schließen, Tippen daneben oder Escape wieder verbergen
+      var statFenster = document.getElementById("statistik-fenster");
+      var statZeigen = document.getElementById("statistik-zeigen");
+      function statistikSchliessen() { statFenster.hidden = true; statZeigen.focus(); }
+      statZeigen.addEventListener("click", function () {
+        statFenster.hidden = false;
+        document.getElementById("statistik-schliessen").focus();
+      });
+      document.getElementById("statistik-schliessen").addEventListener("click", statistikSchliessen);
+      statFenster.addEventListener("click", function (e) { if (e.target === statFenster) statistikSchliessen(); });
+      document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !statFenster.hidden) statistikSchliessen(); });
 
       // Feld, Ablage und Prüfen
       var bild = document.getElementById("bild");

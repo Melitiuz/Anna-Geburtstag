@@ -15,7 +15,7 @@ Stimmen bei allen vier Figuren Platz und Variante, erscheint nach "Bestätigen" 
 
 ## Aufbau
 Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später veröffentlicht werden.
-- `site/index.html` : Startseite mit Übersicht der 4 Quests, Fortschritt, Statistik-Kachel (Versuche je Quest), 2 x 2 Feld,
+- `site/index.html` : Startseite mit Übersicht der 4 Quests, Fortschritt, Knopf "Statistik anzeigen" (öffnet die Versuche je Quest als Fenster), 2 x 2 Feld,
   Ablage der Figuren, Hinweisen und Prüfen
 - `site/spiele/` : mastermind.html, quiz.html, brueckenritt.html, labyrinth.html
   - Obst-Mastermind: Code aus 5 Früchten (Apfel, Birne, Kirsche, Aprikose, Zwetschge, Zitrone, Wiederholung erlaubt),
