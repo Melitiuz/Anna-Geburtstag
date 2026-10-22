@@ -182,11 +182,26 @@
         platz.appendChild(m);
       }
 
+      // Nach einem falschen Versuch ist "Bestätigen" 30 Sekunden gesperrt (auch nach Neuladen der Seite)
+      var SPERRE = "gb-sperre-bis", WARTEZEIT = 30000, sperrUhr = null, sperreErsatz = 0;
+      function sperreBis() { try { return Math.max(sperreErsatz, Number(localStorage.getItem(SPERRE)) || 0); } catch (e) { return sperreErsatz; } }
+      function restSekunden() { return Math.max(0, Math.ceil((sperreBis() - Date.now()) / 1000)); }
+      function sperreAnzeigen() {
+        clearTimeout(sperrUhr);
+        var rest = restSekunden();
+        if (rest > 0) {
+          pruefText.textContent = "Noch nicht richtig. Nächster Versuch in " + rest + (rest === 1 ? " Sekunde." : " Sekunden.");
+          sperrUhr = setTimeout(sperreAnzeigen, 1000);
+        } else if (/^Noch nicht richtig/.test(pruefText.textContent)) {
+          pruefText.textContent = "";
+        }
+        knopf.disabled = rest > 0 || !plaetze.every(belegung);
+      }
+
       function aktualisieren() {
         plaetze.forEach(function (p) { p.classList.toggle("belegt", !!belegung(p)); });
-        var voll = plaetze.every(belegung);
-        knopf.disabled = !voll;
-        pruefText.textContent = "";
+        knopf.disabled = restSekunden() > 0 || !plaetze.every(belegung);
+        if (restSekunden() === 0) pruefText.textContent = "";
       }
 
       function platzUnter(x, y) {
@@ -209,7 +224,7 @@
         m.classList.remove("tipp");
         void m.offsetWidth;
         m.classList.add("tipp");
-        pruefText.textContent = "";
+        if (restSekunden() === 0) pruefText.textContent = "";
       }
 
       // Ziehen mit Finger oder Maus
@@ -258,26 +273,24 @@
       document.addEventListener("pointercancel", zugEnde);
 
       knopf.addEventListener("click", function () {
-        var falsche = plaetze.filter(function (p) {
+        if (restSekunden() > 0) return;
+        var falsch = plaetze.some(function (p) {
           var m = belegung(p);
           if (!m || M.platz(m.dataset.motiv) !== p.dataset.platz) return true;
           var motiv = M.MOTIVE[m.dataset.motiv];
           return motiv.varianten[Number(m.dataset.v)] !== M.loesung(m.dataset.motiv);
         });
-        if (falsche.length) {
-          pruefText.textContent = falsche.length === 1
-            ? "Fast! Eine Figur passt noch nicht. Prüfe Platz und Hinweise."
-            : "Noch nicht ganz. " + falsche.length + " Figuren passen noch nicht. Prüfe Plätze und Hinweise.";
-          falsche.forEach(function (p) {
-            p.classList.remove("falsch");
-            void p.offsetWidth;
-            p.classList.add("falsch");
-          });
+        // Bewusst ohne Angabe, welche oder wie viele Figuren falsch sind
+        if (falsch) {
+          sperreErsatz = Date.now() + WARTEZEIT;
+          try { localStorage.setItem(SPERRE, String(sperreErsatz)); } catch (e) {}
+          sperreAnzeigen();
           return;
         }
         pruefText.textContent = "Alles richtig!";
         nachrichtZeigen();
       });
+      sperreAnzeigen(); // eine laufende Sperre gilt auch nach dem Neuladen
 
       function nachrichtZeigen() {
         var N = G.nachricht;

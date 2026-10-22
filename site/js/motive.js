@@ -86,7 +86,7 @@
     );
   }
 
-  // Burg mit vier Fahnen, alle mit demselben Tier. Ohne Tier (Gewinnfenster): weiße Fahnen.
+  // Burg mit drei Fahnen, alle mit demselben Tier. Ohne Tier (Gewinnfenster): weiße Fahnen.
   // Tiere in Fahnen-Koordinaten (14 x 10)
   var WAPPEN = {
     rotkehlchen: { farbe: "#d9363e", name: "ein Rotkehlchen", bild:
@@ -103,7 +103,7 @@
     schlange: { farbe: "#2fa04a", name: "eine Schlange", bild:
       '<path d="M2 7.6 C3.6 3.2 6 9.2 8 5.6 C9.2 3.4 10.8 3.2 11.6 4.2" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="11.8" cy="4.3" r="1.1" fill="#fff"/>' }
   };
-  var FAHNEN_ORTE = [[24.5, 3, 23], [75.5, 3, 23], [32.5, 31, 48], [52.5, 31, 48]]; // Mast x, Fahne oben, Mast unten
+  var FAHNEN_ORTE = [[24.5, 3, 23], [75.5, 3, 23], [42.5, 31, 48]]; // Mast x, Fahne oben, Mast unten
   function burg(tier) {
     var w = WAPPEN[tier];
     var fahnen = FAHNEN_ORTE.map(function (o) {
