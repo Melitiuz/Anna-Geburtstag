@@ -38,9 +38,9 @@
     (function () {
       // Virtuelles Spielfeld, wird auf die Bildschirmbreite skaliert
       var W = 400, H = 225, BODEN = 190, RX = 70, GRABEN_SCHIRM = 190;
-      var HOLZ_GESAMT = 30, HOLZ_NOETIG = Math.ceil(HOLZ_GESAMT * 2 / 3), VERLUST = 4;
+      var HOLZ_GESAMT = 30, HOLZ_NOETIG = 24, VERLUST = 3;
       var GRAVITATION = 1700, SPRUNG = -650, ABBRUCH = 0.35;   // Loslassen bremst den Aufstieg: kurzer Tipp = kleiner Sprung
-      var TEMPO_START = 240, TEMPO_ENDE = 370;
+      var TEMPO_START = 280, TEMPO_ENDE = 430;
       var AST_UNTEN = BODEN - 46, RABE_Y = BODEN - 56;
       var HOLZ_BODEN = BODEN - 16, HOLZ_NIEDRIG = BODEN - 50, HOLZ_HOCH = BODEN - 95, HOLZ_GANZ_HOCH = BODEN - 112;
 
@@ -114,6 +114,19 @@
         },
         grube: function (x, l) { l.push({ art: "grube", x: x, w: 90 }); l.push({ art: "holz", x: x + 32, y: HOLZ_NIEDRIG }); return { holz: 1, breite: 90 }; },
         grubeRabe: function (x, l) { l.push({ art: "grube", x: x, w: 84 }); l.push({ art: "rabe", x: x + 28, w: 28, vx: 0 }); return { holz: 0, breite: 84 }; },
+        // Kombinationen ohne Verschnaufpause
+        grubeHecke: function (x, l) { l.push({ art: "grube", x: x, w: 80 }); l.push({ art: "hecke", x: x + 115, w: 34, h: 80 }); return { holz: 0, breite: 149 }; },
+        steinGrube: function (x, l) {
+          var abstand = 28 + tempoBei(x) * 0.55;
+          l.push({ art: "stein", x: x, w: 28, h: 22 }); l.push({ art: "grube", x: x + abstand, w: 80 }); l.push({ art: "holz", x: x + abstand + 28, y: HOLZ_NIEDRIG });
+          return { holz: 1, breite: abstand + 80 };
+        },
+        rabenPaar: function (x, l) {
+          l.push({ art: "rabe", x: x + 110, w: 28, vx: -70 }); l.push({ art: "rabe", x: x + 160, w: 28, vx: -70 });
+          l.push({ art: "holz", x: x + 20, y: HOLZ_BODEN }); l.push({ art: "holz", x: x + 70, y: HOLZ_BODEN });
+          return { holz: 2, breite: 90 };
+        },
+        astWolf: function (x, l) { l.push({ art: "ast", x: x, w: 70 }); l.push({ art: "wolf", x: x + 230, w: 36, h: 22, vx: -90 }); return { holz: 0, breite: 110 }; },
         holzBoden: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_BODEN }); l.push({ art: "holz", x: x + 46, y: HOLZ_BODEN }); return { holz: 2, breite: 72 }; },
         holzNiedrig: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_NIEDRIG }); return { holz: 1, breite: 26 }; },
         holzHoch: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_HOCH }); return { holz: 1, breite: 26 }; },
@@ -124,7 +137,8 @@
       };
       var GEWICHTE = {
         stein: 2, steinMitHolz: 3, doppelstein: 3, wolf: 2, wolfPaar: 2, fass: 2, hecke: 2, heckeMitHolz: 3, ast: 2, steinAst: 3,
-        rabe: 2, steinRabe: 3, grube: 3, grubeRabe: 2, holzBoden: 1, holzNiedrig: 1, holzHoch: 2, holzBogen: 2
+        rabe: 2, steinRabe: 3, grube: 3, grubeRabe: 2, grubeHecke: 2, steinGrube: 2, rabenPaar: 2, astWolf: 2,
+        holzBoden: 1, holzNiedrig: 1, holzHoch: 2, holzBogen: 2
       };
 
       function probeHolz(name) { return MUSTER[name](0, []).holz; }

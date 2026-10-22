@@ -15,7 +15,7 @@ Stimmen bei allen vier Figuren Platz und Variante, erscheint nach "Bestätigen" 
 
 ## Aufbau
 Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später veröffentlicht werden.
-- `site/index.html` : Startseite mit Übersicht der 4 Quests, Fortschritt, Knopf "Statistik anzeigen" (öffnet die Versuche je Quest als Fenster), 2 x 2 Feld,
+- `site/index.html` : Startseite mit Übersicht der 4 Quests, Fortschritt (4 Kästchen, daneben der Knopf 📊, der die Versuche je Quest als Fenster öffnet), 2 x 2 Feld,
   Ablage der Figuren, Hinweisen und Prüfen
 - `site/spiele/` : mastermind.html, quiz.html, brueckenritt.html, labyrinth.html
   - Obst-Mastermind: Code aus 5 Früchten (Apfel, Birne, Kirsche, Aprikose, Zwetschge, Zitrone, Wiederholung erlaubt),
@@ -37,11 +37,12 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
     zur Burg hin in Abendstimmung über). Kurz tippen = kleiner Sprung,
     gedrückt halten = hoher Sprung. Hindernisse: Steine, Doppelsteine, entgegenlaufende Wölfe und Wolfspaare, hohe
     Hecken (nur hoher Sprung), tief hängende Äste (nicht springen), Stein direkt vor Ast, rollende Fässer, Gruben, fliegende
-    Raben in Kopfhöhe (unten bleiben) und schwebende Raben über Stein oder Grube (nur hoher Sprung). Auf der Seite stehen bewusst keine
+    Raben in Kopfhöhe (unten bleiben) und schwebende Raben über Stein oder Grube (nur hoher Sprung). Kombinationen: Grube vor Hecke,
+    Stein vor Grube, Rabenpaar, Ast mit Wolf dahinter. Auf der Seite stehen bewusst keine
     Steuerungstipps. Springen per Tippen aufs Spielfeld oder über den großen Knopf darunter (Losreiten, Springen, Noch
     einmal). 30 Hölzer am Boden, niedrig, hoch, in Bögen, über Hecken und unter Ästen.
-    Jeder Zusammenstoß kostet 4 Hölzer. Am Ende ein Burggraben: mindestens 20 Hölzer (2/3) ergeben die Brücke zur Burg.
-    Strecke aus zufälligen Mustern, Tempo steigt von 240 auf 370, dichte Abstände. Mit ?test in der Adresse gibt es einen Testzugang
+    Jeder Zusammenstoß kostet 3 Hölzer. Am Ende ein Burggraben: mindestens 24 Hölzer ergeben die Brücke zur Burg.
+    Strecke aus zufälligen Mustern, Tempo steigt von 280 auf 430, dichte Abstände. Mit ?test in der Adresse gibt es einen Testzugang
     (window.spielTest) für automatische Durchläufe
 - `site/js/config.js` : Name der beschenkten Person, Nachricht im Popup (Text, Link, Gruß), Lösung (Platz und Variante je Figur) und Quizfragen
 - `site/js/motive.js` : die vier Figuren mit ihren Varianten als SVG, Hinweistexte und die Felder des 2 x 2 Rasters

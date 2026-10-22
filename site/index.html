@@ -13,12 +13,13 @@
       <div class="oben">Alles Gute, <span id="name"></span>!</div>
       <h1>Löse die Quests!</h1>
       <p class="unterzeile">Dein Geburtstagsgeschenk ist gut versteckt. Jede Quest schaltet eine Figur und einen Hinweis frei. Setze alle vier richtig ins Bild, dann erfährst du, wo es auf dich wartet.</p>
-      <div class="fortschritt" id="fortschritt" aria-label="Fortschritt"></div>
+      <div class="fortschritt-zeile">
+        <div class="fortschritt" id="fortschritt" aria-label="Fortschritt"></div>
+        <button class="statistik-knopf" type="button" id="statistik-zeigen" aria-haspopup="dialog" aria-label="Statistik anzeigen" title="Statistik">📊</button>
+      </div>
     </header>
 
     <section class="spiele" id="spiele"></section>
-
-    <button class="knopf zweit breit" type="button" id="statistik-zeigen" style="margin-top:16px" aria-haspopup="dialog">📊 Statistik anzeigen</button>
 
     <div class="overlay" id="statistik-fenster" hidden>
       <section class="karte statistik" role="dialog" aria-modal="true" aria-labelledby="statistik-titel">
