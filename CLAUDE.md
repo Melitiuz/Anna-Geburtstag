@@ -38,9 +38,12 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
     gedrückt halten = hoher Sprung. Hindernisse: Steine, Doppelsteine, entgegenlaufende Wölfe und Wolfspaare, hohe
     Hecken (nur hoher Sprung), tief hängende Äste (nicht springen), Stein direkt vor Ast, rollende Fässer, Gruben, fliegende
     Raben in Kopfhöhe (unten bleiben) und schwebende Raben über Stein oder Grube (nur hoher Sprung). Kombinationen: Grube vor Hecke,
-    Stein vor Grube, Rabenpaar, Ast mit Wolf dahinter. Auf der Seite stehen bewusst keine
+    Stein vor Grube, Rabenpaar, Ast mit Wolf dahinter. Unberechenbar: Wölfe laufen verschieden schnell, die Hälfte springt
+    plötzlich hoch, die Hälfte der fliegenden Raben stößt im Sturzflug herab, Fässer rollen verschieden schnell.
+    Im letzten Drittel zieht Nebel auf (Hindernisse erst kurz vorher sichtbar), vor dem Graben lichtet er sich. Auf der Seite stehen bewusst keine
     Steuerungstipps. Springen per Tippen aufs Spielfeld oder über den großen Knopf darunter (Losreiten, Springen, Noch
-    einmal). 30 Hölzer am Boden, niedrig, hoch, in Bögen, über Hecken und unter Ästen.
+    einmal). 30 Hölzer, nur an riskanten Stellen: über Steinen, Hecken und Raben, unter Ästen, im Bogen über Gruben,
+    direkt vor Steinen und zwischen zwei Steinen.
     Jeder Zusammenstoß kostet 3 Hölzer. Am Ende ein Burggraben: mindestens 24 Hölzer ergeben die Brücke zur Burg.
     Strecke aus zufälligen Mustern, Tempo steigt von 280 auf 430, dichte Abstände. Mit ?test in der Adresse gibt es einen Testzugang
     (window.spielTest) für automatische Durchläufe

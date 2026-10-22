@@ -86,15 +86,20 @@
       // Feste Pseudozufallszahl je Index: Hintergrund sieht abwechslungsreich aus, flackert aber nicht
       function rausch(n) { var s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
 
+      // Gegner verhalten sich nicht immer gleich: Wölfe laufen verschieden schnell und manche springen plötzlich hoch,
+      // manche Raben stoßen im Sturzflug herab. Ab welchem Abstand das passiert, wird zufällig festgelegt.
+      function wolfNeu(x) { return { art: "wolf", x: x, w: 36, h: 22, vx: -zufall(60, 140), springt: Math.random() < 0.5 ? zufall(50, 140) : 0 }; }
+      function rabeNeu(x) { return { art: "rabe", x: x, w: 28, vx: -70, sturz: Math.random() < 0.5 ? zufall(120, 260) : 0 }; }
+
       // ---------- Strecke aus Mustern ----------
       // Jedes Muster legt Hindernisse und Hölzer ab und gibt zurück, wie viel Holz und Platz es belegt.
       var MUSTER = {
         stein: function (x, l) { l.push({ art: "stein", x: x, w: 30, h: 24 }); return { holz: 0, breite: 30 }; },
         steinMitHolz: function (x, l) { l.push({ art: "stein", x: x, w: 30, h: 24 }); l.push({ art: "holz", x: x + 2, y: HOLZ_NIEDRIG }); return { holz: 1, breite: 30 }; },
         doppelstein: function (x, l) { l.push({ art: "stein", x: x, w: 26, h: 22 }); l.push({ art: "stein", x: x + 60, w: 26, h: 22 }); return { holz: 0, breite: 86 }; },
-        wolf: function (x, l) { l.push({ art: "wolf", x: x + 120, w: 36, h: 22, vx: -90 }); return { holz: 0, breite: 40 }; },
-        wolfPaar: function (x, l) { l.push({ art: "wolf", x: x + 120, w: 36, h: 22, vx: -90 }); l.push({ art: "wolf", x: x + 185, w: 36, h: 22, vx: -90 }); return { holz: 0, breite: 110 }; },
-        fass: function (x, l) { l.push({ art: "fass", x: x + 150, w: 24, h: 24, vx: -150 }); return { holz: 0, breite: 40 }; },
+        wolf: function (x, l) { l.push(wolfNeu(x + 120)); return { holz: 0, breite: 40 }; },
+        wolfPaar: function (x, l) { l.push(wolfNeu(x + 120)); l.push(wolfNeu(x + 185)); return { holz: 0, breite: 110 }; },
+        fass: function (x, l) { l.push({ art: "fass", x: x + 150, w: 24, h: 24, vx: -zufall(90, 230) }); return { holz: 0, breite: 40 }; },
         hecke: function (x, l) { l.push({ art: "hecke", x: x, w: 34, h: 80 }); return { holz: 0, breite: 34 }; },
         heckeMitHolz: function (x, l) { l.push({ art: "hecke", x: x, w: 34, h: 80 }); l.push({ art: "holz", x: x + 4, y: HOLZ_GANZ_HOCH }); return { holz: 1, breite: 34 }; },
         ast: function (x, l) { l.push({ art: "ast", x: x, w: 70 }); l.push({ art: "holz", x: x + 22, y: HOLZ_BODEN }); return { holz: 1, breite: 70 }; },
@@ -105,7 +110,7 @@
           return { holz: 1, breite: abstand + 70 };
         },
         // Ein Rabe fliegt in Kopfhöhe heran: unten bleiben (oder ganz hoch springen)
-        rabe: function (x, l) { l.push({ art: "rabe", x: x + 110, w: 28, vx: -70 }); l.push({ art: "holz", x: x + 30, y: HOLZ_BODEN }); return { holz: 1, breite: 60 }; },
+        rabe: function (x, l) { l.push(rabeNeu(x + 110)); l.push({ art: "holz", x: x + 30, y: HOLZ_BODEN }); return { holz: 1, breite: 60 }; },
         // Ein Rabe schwebt über dem Stein: ein kleiner Sprung reicht nicht, nur ein hoher
         steinRabe: function (x, l) {
           l.push({ art: "stein", x: x, w: 28, h: 22 }); l.push({ art: "rabe", x: x, w: 28, vx: 0 });
@@ -122,23 +127,27 @@
           return { holz: 1, breite: abstand + 80 };
         },
         rabenPaar: function (x, l) {
-          l.push({ art: "rabe", x: x + 110, w: 28, vx: -70 }); l.push({ art: "rabe", x: x + 160, w: 28, vx: -70 });
+          l.push(rabeNeu(x + 110)); l.push(rabeNeu(x + 160));
           l.push({ art: "holz", x: x + 20, y: HOLZ_BODEN }); l.push({ art: "holz", x: x + 70, y: HOLZ_BODEN });
           return { holz: 2, breite: 90 };
         },
-        astWolf: function (x, l) { l.push({ art: "ast", x: x, w: 70 }); l.push({ art: "wolf", x: x + 230, w: 36, h: 22, vx: -90 }); return { holz: 0, breite: 110 }; },
-        holzBoden: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_BODEN }); l.push({ art: "holz", x: x + 46, y: HOLZ_BODEN }); return { holz: 2, breite: 72 }; },
-        holzNiedrig: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_NIEDRIG }); return { holz: 1, breite: 26 }; },
-        holzHoch: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_HOCH }); return { holz: 1, breite: 26 }; },
-        holzBogen: function (x, l) {
-          l.push({ art: "holz", x: x, y: BODEN - 38 }); l.push({ art: "holz", x: x + 40, y: BODEN - 58 }); l.push({ art: "holz", x: x + 80, y: BODEN - 38 });
+        astWolf: function (x, l) { l.push({ art: "ast", x: x, w: 70 }); l.push(wolfNeu(x + 230)); return { holz: 0, breite: 110 }; },
+        holzVorStein: function (x, l) { l.push({ art: "holz", x: x, y: HOLZ_BODEN }); l.push({ art: "stein", x: x + 44, w: 28, h: 22 }); return { holz: 1, breite: 72 }; },
+        doppelsteinHolz: function (x, l) {
+          l.push({ art: "stein", x: x, w: 26, h: 22 }); l.push({ art: "holz", x: x + 44, y: HOLZ_BODEN }); l.push({ art: "stein", x: x + 92, w: 26, h: 22 });
+          return { holz: 1, breite: 118 };
+        },
+        // Drei Hölzer im Bogen über einer Grube: nur mit genau passendem Sprung alle zu erwischen
+        grubeBogen: function (x, l) {
+          l.push({ art: "grube", x: x, w: 96 });
+          l.push({ art: "holz", x: x + 6, y: BODEN - 40 }); l.push({ art: "holz", x: x + 40, y: BODEN - 62 }); l.push({ art: "holz", x: x + 74, y: BODEN - 40 });
           return { holz: 3, breite: 106 };
         }
       };
       var GEWICHTE = {
         stein: 2, steinMitHolz: 3, doppelstein: 3, wolf: 2, wolfPaar: 2, fass: 2, hecke: 2, heckeMitHolz: 3, ast: 2, steinAst: 3,
         rabe: 2, steinRabe: 3, grube: 3, grubeRabe: 2, grubeHecke: 2, steinGrube: 2, rabenPaar: 2, astWolf: 2,
-        holzBoden: 1, holzNiedrig: 1, holzHoch: 2, holzBogen: 2
+        holzVorStein: 2, doppelsteinHolz: 2, grubeBogen: 2
       };
 
       function probeHolz(name) { return MUSTER[name](0, []).holz; }
@@ -231,7 +240,8 @@
       function box(e, sx) {
         if (e.art === "holz") return { l: sx, r: sx + 26, o: e.y - 8, u: e.y + 8 };
         if (e.art === "ast") return { l: sx + 4, r: sx + e.w - 4, o: 0, u: AST_UNTEN };
-        if (e.art === "rabe") return { l: sx + 2, r: sx + e.w - 2, o: RABE_Y - 8, u: RABE_Y + 7 };
+        if (e.art === "rabe") return { l: sx + 2, r: sx + e.w - 2, o: RABE_Y + (e.tief || 0) - 8, u: RABE_Y + (e.tief || 0) + 7 };
+        if (e.art === "wolf") return { l: sx + 4, r: sx + e.w - 4, o: BODEN - e.h + 4 - (e.hoch || 0), u: BODEN - (e.hoch || 0) };
         // In die Grube fällt nur, wer mitten darin den Boden berührt
         if (e.art === "grube") return { l: sx + 16, r: sx + e.w - 16, o: BODEN - 3, u: BODEN + 20 };
         return { l: sx + 4, r: sx + e.w - 4, o: BODEN - e.h + 4, u: BODEN };
@@ -292,6 +302,17 @@
             var sx = e.x - kamera;
             // Wölfe, Fässer und Raben setzen sich erst in Bewegung, wenn sie ins Bild kommen
             if (e.vx && sx < W + 40) { e.x += e.vx * dt; sx = e.x - kamera; }
+            var vorRitter = sx - (reiter.x + 39);
+            if (e.springt && e.hoch === undefined && vorRitter < e.springt) { e.hoch = 0; e.vy = -420; }
+            if (e.hoch !== undefined && e.vy !== null) {
+              e.vy += GRAVITATION * dt; e.hoch -= e.vy * dt;
+              if (e.hoch <= 0) { e.hoch = 0; e.vy = null; }
+            }
+            if (e.sturz && e.sturzZeit === undefined && vorRitter < e.sturz) e.sturzZeit = 0;
+            if (e.sturzZeit !== undefined && e.sturzZeit < 0.5) {
+              e.sturzZeit += dt;
+              e.tief = 38 * Math.sin(Math.PI * Math.min(1, e.sturzZeit / 0.5));
+            }
             if (sx > W || sx < -100) return;
             if (e.art === "holz") {
               if (ueberlappt(b, box(e, sx))) {
@@ -519,7 +540,7 @@
       }
 
       function rabeZeichnen(e, sx) {
-        var y = RABE_Y + Math.sin(zeit * 5 + e.x) * 1.5, schlag = Math.sin(zeit * 18 + e.x);
+        var y = RABE_Y + (e.tief || 0) + Math.sin(zeit * 5 + e.x) * 1.5, schlag = Math.sin(zeit * 18 + e.x);
         g.fillStyle = "#22222e";
         g.beginPath(); g.moveTo(sx + 22, y); g.lineTo(sx + 31, y - 4); g.lineTo(sx + 31, y + 4); g.closePath(); g.fill();
         oval(sx + 15, y, 11, 6);
@@ -601,6 +622,25 @@
         }
       }
 
+      // Im letzten Drittel zieht Nebel auf: Hindernisse tauchen erst kurz vor dem Ritter auf.
+      // Kurz vor dem Burggraben lichtet er sich wieder.
+      function nebelZeichnen(t) {
+        var p = Math.min(1, kamera / (grabenX - GRABEN_SCHIRM));
+        var dichte = Math.min(1, Math.max(0, (p - 0.64) / 0.06)) * Math.min(1, Math.max(0, (0.985 - p) / 0.04));
+        if (dichte <= 0) return;
+        var klar = W - (W - 245) * dichte;
+        var n = g.createLinearGradient(klar, 0, klar + 80, 0);
+        n.addColorStop(0, misch("#d9d4e2", "#6d5f80", t, 0));
+        n.addColorStop(1, misch("#d9d4e2", "#6d5f80", t, (0.97 * dichte).toFixed(2)));
+        g.fillStyle = n; g.fillRect(-5, -5, W + 10, H + 10);
+        // Ein paar Schwaden treiben auch vor dem Ritter
+        g.fillStyle = misch("#e6e2ec", "#7d6f90", t, (0.25 * dichte).toFixed(2));
+        for (var i = 0; i < 4; i++) {
+          var sx = ((i * 140 - kamera * 1.15 - zeit * 20) % 560 + 560) % 560 - 80;
+          oval(sx, 70 + i * 32, 70, 12);
+        }
+      }
+
       function anzeigeZeichnen() {
         g.fillStyle = "rgba(0,0,0,0.55)"; rundRechteck(8, 8, 96, 26, 13); g.fill();
         holzZeichnen(16, 21);
@@ -655,7 +695,7 @@
           else if (e.art === "stein") steinZeichnen(e, sx);
           else if (e.art === "hecke") heckeZeichnen(e, sx);
           else if (e.art === "ast") astZeichnen(e, sx);
-          else if (e.art === "wolf") wolfZeichnen(e, sx);
+          else if (e.art === "wolf") { g.save(); g.translate(0, -(e.hoch || 0)); wolfZeichnen(e, sx); g.restore(); }
           else if (e.art === "fass") fassZeichnen(e, sx);
           else if (e.art === "rabe") rabeZeichnen(e, sx);
         });
@@ -665,6 +705,7 @@
         funken.forEach(function (f) { g.fillStyle = "rgba(255,230,120," + Math.min(1, f.leben * 3).toFixed(2) + ")"; kreis(f.x, f.y, 1.8); });
         teile.forEach(function (t) { g.globalAlpha = Math.max(0, Math.min(1, t.leben)); holzZeichnen(t.x, t.y); g.globalAlpha = 1; });
 
+        nebelZeichnen(t);
         reiterZeichnen();
 
         g.font = "bold 14px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle";
