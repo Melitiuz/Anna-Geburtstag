@@ -27,7 +27,8 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
   - Royals-Quiz: Pool von 50 Fragen (Großbritannien inkl. erweiterter Familie, Japan, weitere europäische Königshäuser,
     10 "Wer ist das?"-Fragen mit Foto) in config.js, jede Frage mit "bereich" (gb, eu, jp). Pro Runde 10 Fragen nach
     fester Quote (quote: 4 Großbritannien, 4 Europa, 2 Japan), zufällig und ohne Wiederholung aus der vorigen Runde,
-    Antworten gemischt (erste Antwort im Pool ist die richtige). Keine Rückmeldung pro Frage, am Ende nur "Toll"
+    Antworten gemischt (erste Antwort im Pool ist die richtige). Pro Runde 5 Minuten Zeit, nur als ablaufender Balken über den
+    Fragen sichtbar (keine Zahlen); läuft sie ab, ist die Runde verloren ("Die Zeit ist um!"). Keine Rückmeldung pro Frage, am Ende nur "Toll"
     (mindestensRichtig erreicht, derzeit 10 von 10) oder "Pech gehabt, nächstes Mal mehr Glück".
     Fotos gehören nach site/bilder/royals/ (charles, anne, camilla, harry, naruhito, masako, aiko, maxima, letizia,
     silvia als .jpg, von Wikimedia Commons). Fehlt ein Foto, wird die Frage automatisch weggelassen.
