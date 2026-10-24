@@ -51,7 +51,8 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
   - Ritter-Labyrinth: 11 x 11 Felder, Burghof (3 x 3) in der Mitte mit genau einem Zugang. Ein Eingang unten in der Mitte,
     der Ritter startet direkt davor. Ein durchgehendes Labyrinth (Tiefensuche) mit Abzweigungen und Sackgassen; der Weg
     zur Burg muss mindestens 2/3 aller Felder durchqueren (MIN_ANTEIL, mindestens 75 von 112), sonst wird neu gewürfelt.
-    Jede Heckenberührung erzeugt ein neues Labyrinth und der Ritter beginnt wieder vor dem Eingang
+    Jede Heckenberührung erzeugt ein neues Labyrinth und der Ritter beginnt wieder vor dem Eingang (ohne Meldungstext).
+    Über dem Feld steht nur der Versuchszähler; die Burg in der Mitte hat keine Fahnen (Motive.MOTIVE.burg.zeichnen("", true))
   - Royals-Quiz: Pool von 50 Fragen (Großbritannien inkl. erweiterter Familie, Japan, weitere europäische Königshäuser,
     10 "Wer ist das?"-Fragen mit Foto) in config.js, jede Frage mit "bereich" (gb, eu, jp). Pro Runde 10 Fragen nach
     fester Quote (quote: 4 Großbritannien, 4 Europa, 2 Japan), zufällig und ohne Wiederholung aus der vorigen Runde,

@@ -27,7 +27,7 @@
       <h1><span class="titel-icon" data-icon="labyrinth"></span> Ritter-Labyrinth</h1>
       <p class="unterzeile">Führe den Ritter zur Burg in der Mitte.</p>
     </header>
-    <div class="werte"><span>Versuch: <b id="versuch">1</b></span><span>Ziel: Burg in der Mitte</span></div>
+    <div class="werte"><span>Versuch: <b id="versuch">1</b></span></div>
     <div class="feld" id="feld"><canvas id="leinwand"></canvas></div>
     <p class="mitte" id="meldung" aria-live="polite"></p>
   </main>
@@ -53,7 +53,7 @@
         return img;
       }
       var ritterBild = bildAus(Motive.MOTIVE.ritter.svg);
-      var burgBild = bildAus(Motive.MOTIVE.burg.svg);
+      var burgBild = bildAus(Motive.MOTIVE.burg.zeichnen("", true)); // Burg ohne Fahnen
 
       function imHof(x, y) { return x >= HOF[0] && x <= HOF[1] && y >= HOF[0] && y <= HOF[1]; }
       function id(x, y) { return y * N + x; }
@@ -237,7 +237,6 @@
           versuch++;
           versuchEl.textContent = versuch;
           neu();
-          meldung.textContent = "Autsch, die Hecke! Das Labyrinth hat sich verwandelt.";
           sperre = false;
         }, 450);
       }

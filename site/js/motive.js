@@ -262,7 +262,8 @@
   }
   // Burg im Stil des Burg-Emojis: grauer Stein, hoher Mittelturm mit Zinnen,
   // zwei Seitentürme mit roten Spitzdächern, Holztor
-  function burg(sorte) {
+  // ohneFahnen: Burg ganz ohne Fahnen und Masten (für das Ritter-Labyrinth)
+  function burg(sorte, ohneFahnen) {
     var f = FAHNEN[sorte];
     var fahnen = FAHNEN_ORTE.map(function (o) {
       return '<line x1="' + o[0] + '" y1="' + o[2] + '" x2="' + o[0] + '" y2="' + o[1] + '" stroke="#6f6a64" stroke-width="1.3" stroke-linecap="round"/>' +
@@ -309,7 +310,7 @@
       '<circle cx="53.2" cy="83.5" r=".9" fill="#2b2622"/>' +
       // etwas Gras am Fuß der Burg
       '<path d="M9 93 q1.5 -3.5 2.5 0 q1 -4 2.5 0 q1.2 -3 2.4 0 Z M84 93 q1.5 -3.5 2.5 0 q1 -4 2.5 0 q1.2 -3 2.4 0 Z M30 93 q1.2 -3 2.2 0 q1 -3.6 2.2 0 Z M63 93 q1.2 -3 2.2 0 q1 -3.6 2.2 0 Z" fill="#5e9a3e"/>' +
-      fahnen
+      (ohneFahnen ? "" : fahnen)
     );
   }
 
