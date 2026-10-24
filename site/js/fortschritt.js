@@ -69,7 +69,7 @@
   var SPIELE = [
     { id: "mastermind", titel: "Obst-Mastermind", symbol: ICONS.mastermind, datei: "spiele/mastermind.html", text: "Knacke den Obst-Code", motiv: "baum" },
     { id: "quiz", titel: "Royals-Quiz", symbol: ICONS.quiz, datei: "spiele/quiz.html", text: "Wie gut kennst du die Königshäuser?", motiv: "prinzessin" },
-    { id: "brueckenritt", titel: "Brückenritt", symbol: ICONS.brueckenritt, datei: "spiele/brueckenritt.html", text: "Sammle Holz für die Brücke zur Burg", motiv: "burg" },
+    { id: "brueckenritt", titel: "Galopp zur Burg", symbol: ICONS.brueckenritt, datei: "spiele/brueckenritt.html", text: "Sammle Holz für die Brücke zur Burg", motiv: "burg" },
     { id: "labyrinth", titel: "Ritter-Labyrinth", symbol: ICONS.labyrinth, datei: "spiele/labyrinth.html", text: "Führe den Ritter zur Burg", motiv: "ritter" }
   ];
 

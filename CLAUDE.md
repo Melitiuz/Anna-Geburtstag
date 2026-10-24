@@ -63,7 +63,7 @@ Die eigentliche Website liegt im Ordner `site/`. Nur dieser Ordner soll später 
     silvia als .jpg, von Wikimedia Commons). Fehlt ein Foto, wird die Frage automatisch weggelassen.
     Quellenangabe je Foto steht in config.js (quelle) und erscheint unter dem Foto sowie auf site/bildnachweis.html
     (verlinkt im Fuß der Startseite). Neue Fotos nur mit freier Lizenz und mit Quellenangabe einbinden.
-  - Brückenritt (Geschicklichkeit): Seitwärts-Laufspiel, der Ritter galoppiert automatisch (Beine einzeln animiert, Tag geht
+  - Brückenritt (Geschicklichkeit, angezeigt als "Galopp zur Burg", Datei brueckenritt.html): Seitwärts-Laufspiel, der Ritter galoppiert automatisch (Beine einzeln animiert, Tag geht
     zur Burg hin in Abendstimmung über). Kurz tippen = kleiner Sprung,
     gedrückt halten = hoher Sprung. Hindernisse: Steine, Doppelsteine, entgegenlaufende Wölfe und Wolfspaare, hohe
     Hecken (nur hoher Sprung), tief hängende Äste (nicht springen), Stein direkt vor Ast, rollende Fässer, Gruben, fliegende
