@@ -44,7 +44,6 @@
     }
     .frucht-knopf:active { transform: scale(0.94); border-color: var(--akzent); }
     .frucht-knopf svg { width: 100%; max-width: 44px; aspect-ratio: 1; display: block; }
-    .frucht-knopf small { font-size: 0.56rem; letter-spacing: -0.02em; color: #333; font-weight: 700; line-height: 1.3; max-width: 100%; overflow: hidden; }
     .aktionen { display: grid; grid-template-columns: 1fr 2fr; gap: 8px; }
     .loesung { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; max-width: 260px; margin: 10px auto; }
     .loesung .loch { background: #f4f4f4; box-shadow: none; }
@@ -110,7 +109,7 @@
         b.type = "button";
         b.className = "frucht-knopf";
         b.setAttribute("aria-label", f.name);
-        b.innerHTML = f.svg + "<small>" + f.name + "</small>";
+        b.innerHTML = f.svg;
         b.addEventListener("click", function () { setzen(i); });
         leiste.appendChild(b);
       });
