@@ -62,10 +62,10 @@
       var burgBild = bildAus(Motive.MOTIVE.burg.svg);
       // Beine in den Koordinaten des Motivs (100 x 100), hintere zuerst
       var BEINE = [
-        { x: 41, y: 66, l: 26, farbe: "#6a3f25", vorn: false, versatz: 0.8 },
-        { x: 61, y: 66, l: 26, farbe: "#6a3f25", vorn: true, versatz: 0.8 },
-        { x: 31, y: 64, l: 28, farbe: "#7a4b2e", vorn: false, versatz: 0 },
-        { x: 70, y: 64, l: 28, farbe: "#7a4b2e", vorn: true, versatz: 0 }
+        { x: 41.5, y: 66, l: 26, farbe: "#673f20", hell: "#7d4f2b", dunkel: "#4a2c15", vorn: false, versatz: 0.8 },
+        { x: 60.5, y: 66, l: 26, farbe: "#673f20", hell: "#7d4f2b", dunkel: "#4a2c15", vorn: true, versatz: 0.8 },
+        { x: 31.5, y: 64, l: 28, farbe: "#835229", hell: "#a06c42", dunkel: "#5e3a1c", vorn: false, versatz: 0 },
+        { x: 69.5, y: 64, l: 28, farbe: "#835229", hell: "#a06c42", dunkel: "#5e3a1c", vorn: true, versatz: 0 }
       ];
 
       var skala = 1, phase, welt, kamera, reiter, holz, unverwundbar, teile, texte, staub, funken, wackeln, blitz,
@@ -587,8 +587,10 @@
           g.save();
           g.translate(b.x, b.y);
           g.rotate(w);
-          g.fillStyle = b.farbe; rundRechteck(-3, 0, 6, b.l, 2); g.fill();
-          g.fillStyle = "#2b1d1d"; rundRechteck(-4, b.l - 4, 8, 4, 1); g.fill();
+          // Bein als runder Zylinder: Verlauf von hell nach dunkel
+          var zyl = g.createLinearGradient(-3.5, 0, 3.5, 0); zyl.addColorStop(0, b.hell); zyl.addColorStop(0.45, b.farbe); zyl.addColorStop(1, b.dunkel);
+          g.fillStyle = zyl; rundRechteck(-3.5, 0, 7, b.l, 3); g.fill();
+          g.fillStyle = "#2f2622"; rundRechteck(-4.5, b.l - 3, 9, 5, 2); g.fill();
           g.restore();
         });
         g.drawImage(koerperBild, 0, 0, 100, 100);

@@ -7,9 +7,15 @@ Sie enthält 4 Minispiele (Quests). Jede gewonnene Quest schaltet eine Figur fre
 Die Figuren werden per Drag and Drop in ein leeres 2 x 2 Feld gezogen. Das Feld zeigt keine Vorgaben,
 wohin welche Figur gehört, steht nur in den Hinweisen.
 Jede Figur hat Varianten, die man durch Antippen durchschaltet: Burg mit drei Fahnen in den Farben rot, grün, orange,
-blau, grün, orange oder rot, blau, grün (alle drei Fahnen gleich: waagerechte Streifen, blau mit grünem Schrägbalken
-und orangem Punkt, senkrecht geteilt; rot-blau-grün ist eine Falle, die das Ergebnis nicht ändert);
-Krone der Prinzessin mit 1 Rubin (rot), 3 Saphiren (blau) oder 5 Smaragden (grün); Baum mit
+blau, grün, orange oder rot, blau, grün (alle drei Fahnen gleich, jeweils ein Bild in genau diesen Farben:
+grün-orange-rot: grüne Wiese mit einer Blume aus roten und orangen Blütenblättern, blau-grün-orange: blaue und grüne
+Wellen mit oranger, untergehender Sonne in der Mitte, rot-blau-grün: roter Hintergrund mit blauem Drachen (Bauch, Mähne,
+Hörner, Rückenstreifen und Schwanzspitze kräftig grün; nach dem Drachen-Emoji aus Google Noto Emoji, Apache-Lizenz 2.0,
+Nachweis auf bildnachweis.html)
+; rot-blau-grün ist eine
+Falle, die das Ergebnis nicht ändert);
+Krone (auf dem Kopf getragen) mit 1 Rubin (rot), 3 Saphiren (blau) oder 5 Smaragden (grün), das Kleid hat die Farbe
+der Edelsteine (ohne Sorte: helles Kleid); Baum mit
 1 Orange, 2 Kirschpaaren (also 4 Kirschen, darauf soll man selbst kommen) oder 3 grünen Äpfeln; Ritter reitet nach
 links oder rechts.
 Richtiger Platz, richtige Variante und Hinweistext stehen in `config.js` (`loesung`). Die Hinweise nennen keinen Platz und
@@ -101,7 +107,10 @@ Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Royals-Quiz → Prinzessin, 
 - Spiele heißen "Quests" (Quest 1 bis 4), der letzte Schritt "Finale"
 - Kein Logo, keine Bilder und kein Name von Boda Borg auf der Seite, nur der Stil
 - Schriften über Google Fonts (`@import` in `stil.css`): Rubik (Überschriften), Barlow Condensed (Knöpfe, Beschriftungen), Roboto (Text)
-- Die Figuren bleiben bunt im Comic-Stil
+- Die Figuren sind angelehnt an die iPhone-Emojis gezeichnet (Vorlage: Burg-Emoji vom Handy des Nutzers; Burg aus grauem
+  Stein mit hohem Mittelturm, zwei Seitentürmen mit roten Spitzdächern, Holztor). Bewusst nicht künstlich: matte,
+  natürliche Farben und Materialien (unregelmäßige Steine, Holz, buschiges Laub, Stoff mit Falten, Fell), organische
+  Formen, kaum Glanz, Licht weich von links oben
 
 ## Sprache und Stil
 - Alle Texte auf der Website auf Deutsch
