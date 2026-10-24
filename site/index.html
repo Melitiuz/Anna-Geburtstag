@@ -35,8 +35,8 @@
 
     <section class="karte mitte" style="margin-top:24px">
       <div class="oben">Finale</div>
-      <h2>Dein Bild</h2>
-      <p class="leise" id="bild-text"></p>
+      <p class="leise" id="bild-text">Setzt du jede Figur mit Bedacht,<br>
+        ist der Weg zu deinem Geschenk vollbracht.</p>
       <div class="bild" id="bild"></div>
       <div class="ablage" id="ablage"></div>
       <div class="hinweise" id="hinweise"></div>
@@ -117,12 +117,6 @@
       var ablage = document.getElementById("ablage");
       var knopf = document.getElementById("pruefen");
       var pruefText = document.getElementById("pruef-text");
-      var anzahl = F.anzahlGewonnen();
-
-      document.getElementById("bild-text").textContent = (anzahl < 4
-        ? anzahl + " von 4 Figuren freigeschaltet. "
-        : "Alle Figuren sind da! ") +
-        "Lege jede Figur in das Feld, das die Hinweise verraten. Tippe eine Figur an, um sie zu verändern. Nur wenn Platz und Aussehen aller Figuren zu den Hinweisen passen, ist das Bild richtig.";
 
       // Gesammelte Hinweise
       var hinweise = document.getElementById("hinweise");
