@@ -4,7 +4,8 @@
 Eine Website als Ausgangspunkt für ein Geburtstagsgeschenk.
 Sie enthält 4 Minispiele (Quests). Jede gewonnene Quest schaltet eine Figur frei
 (Ritter auf Pferd, Baum, Prinzessin mit Krone, Burg).
-Die Figuren werden per Drag and Drop in ein leeres 2 x 2 Feld gezogen. Das Feld zeigt keine Vorgaben,
+Die Figuren werden per Drag and Drop in ein leeres 2 x 2 Feld gezogen (Hintergrund: site/bilder/landschaft.svg mit
+Abendhimmel und untergehender Sonne links, Bergen oben und grüner Wiese; leere Plätze gestrichelt). Das Feld zeigt keine Vorgaben,
 wohin welche Figur gehört, steht nur in den Hinweisen.
 Jede Figur hat Varianten, die man durch Antippen durchschaltet: Burg mit drei Fahnen in den Farben rot, grün, orange,
 blau, grün, orange oder rot, blau, grün (alle drei Fahnen gleich, jeweils ein Bild in genau diesen Farben:

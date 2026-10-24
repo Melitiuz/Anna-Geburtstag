@@ -204,19 +204,20 @@ p { margin: 0 0 12px; }
   padding: 8px;
   border-radius: 12px;
   border: 3px solid var(--akzent);
-  background: #0c0c0c;
+  /* Landschaft: Abendhimmel links, Berge oben, grüne Wiese */
+  background: #4c8a3a url("../bilder/landschaft.svg") center / cover no-repeat;
   user-select: none; -webkit-user-select: none;
 }
 .platz {
   position: relative;
   aspect-ratio: 1;
   border-radius: 10px;
-  border: 2px dashed #3a3a3a;
-  background: radial-gradient(circle at 50% 40%, #232323, #161616);
+  border: 2px dashed rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.06);
   transition: background 0.15s, border-color 0.15s;
 }
-.platz.belegt { border-style: solid; border-color: #2c2c2c; background: #f4f4f4; }
-.platz.ziel-aktiv { border-color: #fff; border-style: solid; background: rgba(214, 43, 43, 0.35); }
+.platz.belegt { border-color: transparent; background: transparent; }
+.platz.ziel-aktiv { border-color: #fff; border-style: solid; background: rgba(255, 255, 255, 0.25); }
 .platz.falsch { animation: wackeln 0.4s; }
 @keyframes wackeln { 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
