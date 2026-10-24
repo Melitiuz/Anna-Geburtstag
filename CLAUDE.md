@@ -97,11 +97,11 @@ Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Royals-Quiz → Prinzessin, 
 - Keine externen Abhängigkeiten außer bei echtem Bedarf (einzige Ausnahme: Google Fonts)
 
 ## Hosting und Workflow
-- Code liegt im GitHub Repository https://github.com/Melitiuz/Anna-Geburtstag (derzeit privat, soll später öffentlich werden)
+- Code liegt im GitHub Repository https://github.com/Melitiuz/Anna-Geburtstag (der Nutzer stellt es selbst auf öffentlich)
 - Commits mit Autor `Melitiuz <Melitiuz@users.noreply.github.com>` (im Repository eingestellt)
-- **Noch nicht veröffentlichen.** Die Seite geht erst online, wenn der Nutzer es ausdrücklich sagt.
-- Geplantes Hosting: GitHub Pages (Adresse dann https://melitiuz.github.io/Anna-Geburtstag/).
-  Die Veröffentlichungs-Automatik (Workflow) wurde bewusst wieder entfernt und wird erst bei Bedarf angelegt.
+- Veröffentlichung freigegeben: Der Nutzer macht das Repository öffentlich und schaltet Pages selbst ein (Settings → Pages → Source "GitHub Actions").
+- Hosting: GitHub Pages, Adresse https://melitiuz.github.io/Anna-Geburtstag/
+  Workflow `.github/workflows/pages.yml` veröffentlicht bei jedem Push auf main nur den Ordner `site/` (auch von Hand startbar).
 
 ## Design
 - Angelehnt an den Stil von Boda Borg (dem Ort des Geschenks): schwarzer Hintergrund mit rotem Schimmer,
@@ -126,4 +126,4 @@ Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Royals-Quiz → Prinzessin, 
 - [x] Spiele: Obst-Mastermind, Royals-Quiz, Brückenritt (Geschicklichkeit), Ritter-Labyrinth
 - [x] Quizfragen: 50 Fragen zum Thema Royals (auch Japan), 10 pro Runde
 - [x] Fotos für die 10 "Wer ist das?"-Fragen (Wikimedia Commons, freie Lizenzen, Nachweis auf bildnachweis.html)
-- [ ] Veröffentlichen (später, voraussichtlich GitHub Pages)
+- [ ] Veröffentlichen über GitHub Pages (Workflow angelegt; Nutzer schaltet Repository öffentlich und Pages ein)
