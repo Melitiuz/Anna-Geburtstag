@@ -176,6 +176,9 @@
     versuch: versuch,
     statistik: function () { return statistik(laden()); },
     konfetti: konfetti,
+    // Versteckter 5. Hinweis (Apfel an den Ritter verfüttert)
+    geheimnisGefunden: function () { return !!laden().geheimnis; },
+    geheimnisFinden: function () { var d = laden(); d.geheimnis = true; speichern(d); },
     zuruecksetzen: function () { speichern({}); },
     spielInfo: spiel
   };

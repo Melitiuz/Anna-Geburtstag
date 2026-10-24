@@ -134,6 +134,14 @@
         else { li.textContent = "🔒 Gewinne " + s.titel + " für diesen Hinweis."; li.className = "gesperrt"; }
         hListe.appendChild(li);
       });
+      // Versteckter 5. Hinweis
+      var geheimLi = document.createElement("li");
+      function geheimAnzeigen() {
+        if (F.geheimnisGefunden()) { geheimLi.textContent = "💡 " + G.geheimHinweis; geheimLi.className = ""; }
+        else { geheimLi.textContent = "🔒 Dieser Hinweis ist noch versteckt."; geheimLi.className = "gesperrt"; }
+      }
+      geheimAnzeigen();
+      hListe.appendChild(geheimLi);
       hinweise.appendChild(hListe);
 
       // Leeres 2 x 2 Feld, welche Figur wohin gehört, steht nur in den Hinweisen
@@ -315,6 +323,90 @@
         o.querySelector("button").addEventListener("click", function () { o.remove(); });
         document.body.appendChild(o);
         F.konfetti();
+      }
+
+      // Geheimnis: Nach dem Ritter-Labyrinth kann man einen Apfel aus dem Obstkorb (Icon von Obst-Mastermind)
+      // an den Ritter verfüttern. Dafür gibt es den versteckten 5. Hinweis.
+      var APFEL = '<svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><path d="M20 12 l2 -7" stroke="#6b4a2a" stroke-width="2.5" stroke-linecap="round"/>' +
+        '<path d="M22 9 C25 4 31 5 31 7 C28 10 24 10 22 9 Z" fill="#4fbf5a"/><circle cx="20" cy="24" r="13" fill="#e3262b"/>' +
+        '<ellipse cx="15" cy="19" rx="4" ry="2.6" fill="#fff" opacity=".5"/></svg>';
+      var korbLink = liste.querySelector(".spiel-link"), korb = korbLink.querySelector(".symbol");
+      var futter = null, futterGezogen = false;
+      function ritterUnter(x, y) {
+        var r = document.querySelector('.motiv[data-motiv="ritter"]');
+        if (!r) return null;
+        var b = r.getBoundingClientRect(), rand = 10;
+        return x >= b.left - rand && x <= b.right + rand && y >= b.top - rand && y <= b.bottom + rand ? r : null;
+      }
+      if (F.gewonnen("labyrinth")) {
+        korb.style.touchAction = "none";
+        korbLink.addEventListener("dragstart", function (e) { e.preventDefault(); });
+        korb.addEventListener("pointerdown", function (e) {
+          futter = { id: e.pointerId, x: e.clientX, y: e.clientY, geist: null };
+          futterGezogen = false;
+        });
+        document.addEventListener("pointermove", function (e) {
+          if (!futter || e.pointerId !== futter.id) return;
+          if (!futter.geist) {
+            if (Math.hypot(e.clientX - futter.x, e.clientY - futter.y) < 8) return;
+            futter.geist = document.createElement("div");
+            futter.geist.className = "schwebt";
+            futter.geist.style.width = futter.geist.style.height = "44px";
+            futter.geist.innerHTML = APFEL;
+            document.body.appendChild(futter.geist);
+            futterGezogen = true;
+            requestAnimationFrame(mitScrollen);
+          }
+          futter.px = e.clientX;
+          futter.py = e.clientY;
+          futter.geist.style.left = e.clientX + "px";
+          futter.geist.style.top = e.clientY + "px";
+          zielMarkieren();
+        });
+        function zielMarkieren() {
+          var r = document.querySelector('.motiv[data-motiv="ritter"]');
+          if (r && futter) r.classList.toggle("futter-ziel", !!ritterUnter(futter.px, futter.py));
+        }
+        // Am oberen oder unteren Bildschirmrand scrollt die Seite mit, damit man den Ritter erreicht
+        function mitScrollen() {
+          if (!futter || !futter.geist) return;
+          var rand = 80, schritt = 0;
+          if (futter.py > innerHeight - rand) schritt = Math.ceil((futter.py - (innerHeight - rand)) / 4);
+          else if (futter.py < rand) schritt = -Math.ceil((rand - futter.py) / 4);
+          if (schritt) { window.scrollBy(0, schritt); zielMarkieren(); }
+          requestAnimationFrame(mitScrollen);
+        }
+        var futterEnde = function (e) {
+          if (!futter || e.pointerId !== futter.id) return;
+          var f = futter;
+          futter = null;
+          if (!f.geist) return;
+          f.geist.remove();
+          var r = document.querySelector('.motiv[data-motiv="ritter"]');
+          if (r) r.classList.remove("futter-ziel");
+          if (e.type === "pointerup" && ritterUnter(e.clientX, e.clientY)) geheimnisZeigen();
+        };
+        document.addEventListener("pointerup", futterEnde);
+        document.addEventListener("pointercancel", futterEnde);
+        // Nach dem Ziehen nicht zum Spiel wechseln
+        korbLink.addEventListener("click", function (e) { if (futterGezogen) { e.preventDefault(); futterGezogen = false; } });
+      }
+
+      function geheimnisZeigen() {
+        F.geheimnisFinden();
+        geheimAnzeigen();
+        var o = document.createElement("div");
+        o.className = "overlay";
+        o.innerHTML =
+          '<div class="karte" role="dialog" aria-modal="true">' +
+          '<div class="motiv-gross">' + M.MOTIVE.ritter.svg + "</div>" +
+          "<h2>Nom nom!</h2><p>Danke für den Apfel! Dafür gibt es einen weiteren Hinweis:</p>" +
+          '<p class="hinweis"></p>' +
+          '<p><button class="knopf breit" type="button">Weiter</button></p>' +
+          "</div>";
+        o.querySelector(".hinweis").textContent = "💡 " + G.geheimHinweis;
+        o.querySelector("button").addEventListener("click", function () { o.remove(); });
+        document.body.appendChild(o);
       }
 
       document.getElementById("reset").addEventListener("click", function () {

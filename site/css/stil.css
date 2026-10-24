@@ -224,6 +224,7 @@ p { margin: 0 0 12px; }
 .motiv svg, .motiv-gross svg, .platz svg { display: block; width: 100%; height: 100%; }
 .platz .motiv { position: absolute; inset: 6%; }
 .motiv.zieht { opacity: 0.25; }
+.motiv.futter-ziel .zunge { opacity: 1; }
 .schwebt { position: fixed; z-index: 70; pointer-events: none; filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.5)); transform: translate(-50%, -50%) scale(1.08); }
 
 .ablage {

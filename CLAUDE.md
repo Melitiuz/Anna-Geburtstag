@@ -6,17 +6,29 @@ Sie enthält 4 Minispiele (Quests). Jede gewonnene Quest schaltet eine Figur fre
 (Ritter auf Pferd, Baum, Prinzessin mit Krone, Burg).
 Die Figuren werden per Drag and Drop in ein leeres 2 x 2 Feld gezogen. Das Feld zeigt keine Vorgaben,
 wohin welche Figur gehört, steht nur in den Hinweisen.
-Jede Figur hat Varianten, die man durch Antippen durchschaltet: Burg mit drei Fahnen, alle mit demselben Tier
-(rot mit Rotkehlchen, blau mit Fisch, gelb mit Löwe, grün mit Schlange), Krone der Prinzessin mit drei gleichen Edelsteinen
-(Rubin, Smaragd, Saphir, Diamant), Baum mit Äpfeln, Birnen, Kirschen oder Pflaumen, Ritter reitet nach links oder rechts.
-Richtiger Platz, richtige Variante und Hinweistext stehen in `config.js` (`loesung`). Die Hinweise sind bewusst schwer:
-Sie nennen keinen Platz und keine Variante direkt, sondern mischen Verneinungen und Aussagen über Bezüge zu anderen Figuren
-(ohne einen der vier Hinweise bleiben mehrere mögliche Lösungen; links/rechts steckt nur in "der untergehenden Sonne
-entgegen" = Westen = links)
-und verraten jeweils nur einen Teil, erst alle vier zusammen ergeben
-genau eine Lösung (Ritter oben links nach links, Burg oben rechts mit Schlangen, Prinzessin unten links mit Rubinen,
-Baum unten rechts mit Pflaumen). Nach jedem gewonnenen Spiel zeigt das Gewinnfenster den Hinweis und die Figur in einer
-neutralen Variante (weiße Fahnen, graue Edelsteine, Baum ohne Früchte), damit sie nichts verrät.
+Jede Figur hat Varianten, die man durch Antippen durchschaltet: Burg mit drei Fahnen in den Farben rot, grün, orange,
+blau, grün, orange oder rot, blau, grün (alle drei Fahnen gleich: waagerechte Streifen, blau mit grünem Schrägbalken
+und orangem Punkt, senkrecht geteilt; rot-blau-grün ist eine Falle, die das Ergebnis nicht ändert);
+Krone der Prinzessin mit 1 Rubin (rot), 3 Saphiren (blau) oder 5 Smaragden (grün); Baum mit
+1 Orange, 2 Kirschpaaren (also 4 Kirschen, darauf soll man selbst kommen) oder 3 grünen Äpfeln; Ritter reitet nach
+links oder rechts.
+Richtiger Platz, richtige Variante und Hinweistext stehen in `config.js` (`loesung`). Die Hinweise nennen keinen Platz und
+keine Variante direkt, jeder verrät nur einen Teil:
+1. Obst-Mastermind: "Am Baum hängen mehr Früchte als Edelsteine in der Krone."
+2. Royals-Quiz: "Die Farbe der Edelsteine findet sich auch in den Fahnen der Burg."
+3. Brückenritt: "Die Fahnen der Burg tragen nicht die Farbe der Früchte."
+4. Ritter-Labyrinth: "Der Ritter reitet von der Burg weg, der Abendsonne entgegen." (Westen = links)
+5. Versteckt (`geheimHinweis` in config.js): "Der Baum steht vor den Toren der Burg." Er steht in der Hinweisliste
+   gesperrt ("Dieser Hinweis ist noch versteckt"), bis man nach dem Ritter-Labyrinth einen Apfel aus dem Obstkorb
+   (Icon von Obst-Mastermind in der Quest-Liste) per Drag and Drop an den Ritter verfüttert (Ablage oder Feld).
+   Beim Ziehen scrollt die Seite am Bildschirmrand mit; hält man den Apfel über den Ritter, streckt das Pferd die Zunge
+   heraus (.zunge im Ritter-SVG, sichtbar über .futter-ziel). Dann erscheint ein Popup "Nom nom!" mit dem Hinweis,
+   gespeichert als `geheimnis` im Fortschritt.
+Lösung: Ritter oben links nach links, Burg oben rechts blau-grün-orange, Prinzessin unten links, Baum unten rechts mit
+Kirschen, Prinzessin mit 3 Saphiren. Eindeutig nur, wenn man die Kirschpaare als 4 Kirschen zählt; ohne den versteckten
+Hinweis sind die Plätze nicht eindeutig.
+Nach jedem gewonnenen Spiel zeigt das Gewinnfenster den Hinweis und die Figur in einer neutralen Variante
+(weiße Fahnen, Krone ohne Steine, Baum ohne Früchte), damit sie nichts verrät.
 Auf der Startseite stehen alle gesammelten Hinweise.
 Stimmen bei allen vier Figuren Platz und Variante, erscheint nach "Bestätigen" ein Popup mit der Nachricht zum Geschenk.
 Bei einem Fehler steht nur "Noch nicht richtig" (ohne Angabe, welche oder wie viele Figuren falsch sind), dann ist

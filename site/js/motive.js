@@ -17,6 +17,8 @@
     '<ellipse cx="50" cy="60" rx="27" ry="13" fill="#8a5a3b"/>' +
     '<path d="M68 56 L79 34 L89 37 L80 62 Z" fill="#8a5a3b"/>' +
     '<ellipse cx="87" cy="41" rx="10" ry="6" transform="rotate(28 87 41)" fill="#8a5a3b"/>' +
+    // Zunge: normalerweise unsichtbar, beim Apfel-Füttern über CSS (.futter-ziel .zunge) sichtbar
+    '<path class="zunge" opacity="0" d="M89.5 46.5 Q95 47.5 95.5 53 Q95 56.5 91.8 55 Q90.6 51 88.6 48 Z" fill="#e8577a" stroke="#b8344f" stroke-width=".6"/>' +
     '<path d="M79 31 L82 25 L84 32 Z" fill="#6a3f25"/>' +
     '<path d="M70 52 L78 33 L81 34 L74 54 Z" fill="#4a2e1d"/>' +
     '<circle cx="88" cy="38" r="1.3" fill="#1b1b1b"/>' +
@@ -34,42 +36,48 @@
     return svg(BODEN + "<g" + spiegel + ">" + RITTER + "</g>");
   }
 
-  // Baum mit verschiedenen Früchten
-  var FRUCHT_PLAETZE = [[38, 34], [60, 26], [64, 50], [30, 54], [50, 48]];
+  // Baum mit verschiedenen Früchten in unterschiedlicher Anzahl. Ohne Sorte (Gewinnfenster): ohne Früchte.
+  var FRUCHT_PLAETZE = [[50, 42], [34, 32], [64, 30], [36, 56], [64, 52]];
   var FRUECHTE = {
-    aepfel: function (x, y) { return '<circle cx="' + x + '" cy="' + y + '" r="4" fill="#e23b3b"/><path d="M' + x + " " + (y - 4) + " l1.5 -2.5" + '" stroke="#5a3b1d" stroke-width="1.2"/>'; },
-    birnen: function (x, y) { return '<path d="M' + x + " " + (y - 5) + " C" + (x + 2) + " " + (y - 3) + " " + (x + 4.5) + " " + (y + 2) + " " + x + " " + (y + 4.5) + " C" + (x - 4.5) + " " + (y + 2) + " " + (x - 2) + " " + (y - 3) + " " + x + " " + (y - 5) + ' Z" fill="#d6d23a" stroke="#a9a020" stroke-width=".8"/>'; },
-    kirschen: function (x, y) { return '<path d="M' + (x - 2.5) + " " + (y + 2) + " Q" + x + " " + (y - 6) + " " + (x + 1) + " " + (y - 6) + " Q" + (x + 2) + " " + (y - 3) + " " + (x + 3) + " " + (y + 2) + '" stroke="#3b5d1d" stroke-width="1" fill="none"/><circle cx="' + (x - 2.5) + '" cy="' + (y + 3) + '" r="2.6" fill="#b3112e"/><circle cx="' + (x + 3) + '" cy="' + (y + 3) + '" r="2.6" fill="#b3112e"/>'; },
-    pflaumen: function (x, y) { return '<ellipse cx="' + x + '" cy="' + y + '" rx="3.2" ry="4.3" fill="#6b3fa0"/><path d="M' + x + " " + (y - 3.5) + " v6" + '" stroke="#4e2c78" stroke-width=".8"/>'; }
+    orangen: { anzahl: 1, name: "eine Orange", zeichnen: function (x, y) {
+      return '<circle cx="' + x + '" cy="' + y + '" r="5" fill="#f5911e"/><circle cx="' + (x - 1.6) + '" cy="' + (y - 1.8) + '" r="1.4" fill="#ffc77a"/>' +
+        '<ellipse cx="' + (x + 2) + '" cy="' + (y - 5) + '" rx="2.4" ry="1.1" fill="#2f8a3c"/>'; } },
+    kirschen: { anzahl: 2, name: "zwei Kirschpaare", zeichnen: function (x, y) {
+      return '<path d="M' + (x - 2.5) + " " + (y + 2) + " Q" + x + " " + (y - 6) + " " + (x + 1) + " " + (y - 6) + " Q" + (x + 2) + " " + (y - 3) + " " + (x + 3) + " " + (y + 2) + '" stroke="#3b5d1d" stroke-width="1" fill="none"/>' +
+        '<circle cx="' + (x - 2.5) + '" cy="' + (y + 3) + '" r="2.6" fill="#b3112e"/><circle cx="' + (x + 3) + '" cy="' + (y + 3) + '" r="2.6" fill="#b3112e"/>'; } },
+    aepfel: { anzahl: 3, name: "drei Äpfel", zeichnen: function (x, y) {
+      return '<circle cx="' + x + '" cy="' + y + '" r="4.3" fill="#b8e04a" stroke="#4d7a1c" stroke-width=".8"/><circle cx="' + (x - 1.4) + '" cy="' + (y - 1.6) + '" r="1.2" fill="#e8f7b0"/>' +
+        '<path d="M' + x + " " + (y - 4) + " l1.5 -2.5" + '" stroke="#5a3b1d" stroke-width="1.2"/>'; } }
   };
 
-  function baum(frucht) {
-    var f = FRUECHTE[frucht];
+  function baum(sorte) {
+    var f = FRUECHTE[sorte];
     return svg(
       '<ellipse cx="50" cy="95" rx="26" ry="3.5" fill="rgba(0,0,0,.15)"/>' +
       '<path d="M44 94 L46 56 H54 L56 94 Z" fill="#7a4b2e"/><path d="M50 70 L40 58 M50 64 L60 54" stroke="#7a4b2e" stroke-width="4" stroke-linecap="round"/>' +
       '<circle cx="31" cy="48" r="17" fill="#3f9e4d"/><circle cx="69" cy="48" r="17" fill="#3f9e4d"/>' +
       '<circle cx="50" cy="38" r="24" fill="#4fb85c"/><circle cx="50" cy="20" r="15" fill="#5cc76a"/>' +
-      (f ? FRUCHT_PLAETZE.map(function (p) { return f(p[0], p[1]); }).join("") : "")
+      (f ? FRUCHT_PLAETZE.slice(0, f.anzahl).map(function (p) { return f.zeichnen(p[0], p[1]); }).join("") : "")
     );
   }
 
-  // Prinzessin mit drei Edelsteinen derselben Sorte in der Krone. Ohne Sorte (Gewinnfenster): graue Steine.
+  // Prinzessin: In der Krone sitzen je nach Sorte unterschiedlich viele Edelsteine. Ohne Sorte (Gewinnfenster): keine.
   var EDELSTEINE = {
-    rubin: { farbe: "#d81f3c", licht: "#ff8a9a", name: "Rubine" },
-    smaragd: { farbe: "#169c50", licht: "#7be3a6", name: "Smaragde" },
-    saphir: { farbe: "#2459d6", licht: "#8db2ff", name: "Saphire" },
-    diamant: { farbe: "#eef7ff", licht: "#ffffff", name: "Diamanten" }
+    rubin: { farbe: "#d81f3c", licht: "#ff8a9a", anzahl: 1, name: "ein Rubin" },
+    saphir: { farbe: "#2459d6", licht: "#8db2ff", anzahl: 3, name: "drei Saphire" },
+    smaragd: { farbe: "#169c50", licht: "#7be3a6", anzahl: 5, name: "fünf Smaragde" }
   };
   function prinzessin(sorte) {
-    var st = EDELSTEINE[sorte] || { farbe: "#9aa0a8", licht: "#c9cdd3" };
-    var s = "";
-    [40, 50, 60].forEach(function (x, i) {
-      var y = i === 1 ? 10 : 13;
-      s += '<path d="M' + x + " " + (y - 4) + " L" + (x + 3.6) + " " + (y - 1) + " L" + x + " " + (y + 4) + " L" + (x - 3.6) + " " + (y - 1) +
-        ' Z" fill="' + st.farbe + '" stroke="' + (sorte === "diamant" ? "#9fb8cc" : "#fff") + '" stroke-width=".7"/>' +
-        '<path d="M' + (x - 1.6) + " " + (y - 2) + " L" + x + " " + (y - 3) + " L" + (x + 0.6) + " " + (y - 1.2) + ' Z" fill="' + st.licht + '"/>';
-    });
+    var st = EDELSTEINE[sorte], s = "";
+    if (st) {
+      var n = st.anzahl, b = n > 3 ? 2.7 : 3.6;
+      for (var i = 0; i < n; i++) {
+        var x = n === 1 ? 50 : 38 + (24 * i) / (n - 1), y = 12;
+        s += '<path d="M' + x + " " + (y - b * 1.1) + " L" + (x + b) + " " + (y - b * 0.25) + " L" + x + " " + (y + b * 1.1) + " L" + (x - b) + " " + (y - b * 0.25) +
+          ' Z" fill="' + st.farbe + '" stroke="#fff" stroke-width=".7"/>' +
+          '<path d="M' + (x - b * 0.45) + " " + (y - b * 0.55) + " L" + x + " " + (y - b * 0.8) + " L" + (x + b * 0.2) + " " + (y - b * 0.3) + ' Z" fill="' + st.licht + '"/>';
+      }
+    }
     return svg(
       '<ellipse cx="50" cy="95" rx="26" ry="3.5" fill="rgba(0,0,0,.15)"/>' +
       '<path d="M37 30 C33 50 34 60 30 66 H70 C66 60 67 50 63 30 Z" fill="#f2c14e"/>' +
@@ -86,30 +94,32 @@
     );
   }
 
-  // Burg mit drei Fahnen, alle mit demselben Tier. Ohne Tier (Gewinnfenster): weiße Fahnen.
-  // Tiere in Fahnen-Koordinaten (14 x 10)
-  var WAPPEN = {
-    rotkehlchen: { farbe: "#d9363e", name: "ein Rotkehlchen", bild:
-      '<path d="M10.4 5.2 L13 3.6 L12.6 6.4 Z" fill="#7a4a26" stroke="#fff" stroke-width=".35"/>' +
-      '<ellipse cx="7.6" cy="5.6" rx="3.4" ry="2.5" fill="#8a5a34" stroke="#fff" stroke-width=".4"/>' +
-      '<circle cx="4.7" cy="3.7" r="1.8" fill="#8a5a34" stroke="#fff" stroke-width=".4"/>' +
-      '<ellipse cx="5.4" cy="5.6" rx="1.8" ry="2" fill="#ff8f2e"/><path d="M3 3.4 L1.6 4 L3 4.3 Z" fill="#f2c230"/>' +
-      '<circle cx="4.3" cy="3.3" r=".45" fill="#111"/><path d="M6.8 8 V9.2 M8.4 8 V9.2" stroke="#fff" stroke-width=".4"/>' },
-    fisch: { farbe: "#2f6fd6", name: "ein Fisch", bild:
-      '<ellipse cx="6.3" cy="5" rx="3.6" ry="2.2" fill="#fff"/><path d="M9.4 5 L12.4 2.8 L12.4 7.2 Z" fill="#fff"/><circle cx="4.4" cy="4.5" r=".6" fill="#2f6fd6"/>' },
-    loewe: { farbe: "#f2c230", name: "ein Löwe", bild:
-      '<circle cx="7" cy="5" r="3.6" fill="#a8641e"/><circle cx="7" cy="5.3" r="2.2" fill="#f7d977"/>' +
-      '<circle cx="6.2" cy="4.8" r=".4" fill="#3a2410"/><circle cx="7.8" cy="4.8" r=".4" fill="#3a2410"/><path d="M6.4 6.3 Q7 6.9 7.6 6.3" stroke="#3a2410" stroke-width=".5" fill="none"/>' },
-    schlange: { farbe: "#2fa04a", name: "eine Schlange", bild:
-      '<path d="M2 7.6 C3.6 3.2 6 9.2 8 5.6 C9.2 3.4 10.8 3.2 11.6 4.2" stroke="#fff" stroke-width="1.4" fill="none" stroke-linecap="round"/><circle cx="11.8" cy="4.3" r="1.1" fill="#fff"/>' }
+  // Burg mit drei gleichen Fahnen, jede in drei Farben mit eigenem Muster. Ohne Sorte (Gewinnfenster): weiße Fahnen.
+  // Muster in Fahnen-Koordinaten (14 x 10, rechts mit Kerbe: Rand bei x = 14 oben/unten, 12 in der Mitte)
+  var FAHNEN = {
+    // Drei waagerechte Streifen: rot, grün, orange
+    "rot-gruen-orange": { name: "rot, grün und orange", muster:
+      '<path d="M0 0 H14 L12.67 3.33 H0 Z" fill="#d9363e"/>' +
+      '<path d="M0 3.33 H12.67 L12 5 L12.67 6.67 H0 Z" fill="#2fa04a"/>' +
+      '<path d="M0 6.67 H12.67 L14 10 H0 Z" fill="#f5911e"/>' },
+    // Blau mit grünem Schrägbalken und orangem Punkt
+    "blau-gruen-orange": { name: "blau, grün und orange", muster:
+      '<path d="M0 0 H14 L12 5 L14 10 H0 Z" fill="#2f6fd6"/>' +
+      '<path d="M0 6.6 L9.9 0 H13.9 L0 10 Z" fill="#2fa04a"/>' +
+      '<circle cx="8.6" cy="7.1" r="1.7" fill="#f5911e"/>' },
+    // Senkrecht geteilt: rot am Mast, blau in der Mitte, grün außen
+    "rot-blau-gruen": { name: "rot, blau und grün", muster:
+      '<path d="M0 0 H4.67 V10 H0 Z" fill="#d9363e"/>' +
+      '<path d="M4.67 0 H9.33 V10 H4.67 Z" fill="#2f6fd6"/>' +
+      '<path d="M9.33 0 H14 L12 5 L14 10 H9.33 Z" fill="#2fa04a"/>' }
   };
   var FAHNEN_ORTE = [[24.5, 3, 23], [75.5, 3, 23], [42.5, 31, 48]]; // Mast x, Fahne oben, Mast unten
-  function burg(tier) {
-    var w = WAPPEN[tier];
+  function burg(sorte) {
+    var f = FAHNEN[sorte];
     var fahnen = FAHNEN_ORTE.map(function (o) {
       return '<line x1="' + o[0] + '" y1="' + o[2] + '" x2="' + o[0] + '" y2="' + o[1] + '" stroke="#555" stroke-width="1.5"/>' +
-        '<g transform="translate(' + o[0] + " " + o[1] + ') scale(1.15)"><path d="M0 0 H14 L12 5 L14 10 H0 Z" fill="' + (w ? w.farbe : "#ececec") + '" stroke="rgba(0,0,0,.25)" stroke-width=".5"/>' +
-        (w ? w.bild : "") + "</g>";
+        '<g transform="translate(' + o[0] + " " + o[1] + ') scale(1.15)">' + (f ? f.muster : '<path d="M0 0 H14 L12 5 L14 10 H0 Z" fill="#ececec"/>') +
+        '<path d="M0 0 H14 L12 5 L14 10 H0 Z" fill="none" stroke="rgba(0,0,0,.25)" stroke-width=".5"/></g>';
     }).join("");
     return svg(
       '<ellipse cx="50" cy="95" rx="36" ry="3.5" fill="rgba(0,0,0,.15)"/>' +
@@ -141,28 +151,26 @@
     baum: {
       name: "Baum",
       wer: "Der Baum",
-      varianten: ["aepfel", "birnen", "kirschen", "pflaumen"],
+      varianten: ["orangen", "kirschen", "aepfel"],
       zeichnen: baum,
       standard: "",
-      hinweis: function (v) {
-        return { aepfel: "An ihm hängen Äpfel.", birnen: "An ihm hängen Birnen.", kirschen: "An ihm hängen Kirschen.", pflaumen: "An ihm hängen Pflaumen." }[v];
-      }
+      hinweis: function (v) { return "An ihm " + (v === "orangen" ? "hängt " : "hängen ") + FRUECHTE[v].name + "."; }
     },
     prinzessin: {
       name: "Prinzessin mit Krone",
       wer: "Die Prinzessin",
-      varianten: ["rubin", "smaragd", "saphir", "diamant"],
+      varianten: ["rubin", "saphir", "smaragd"],
       zeichnen: prinzessin,
       standard: "",
-      hinweis: function (v) { return "In ihrer Krone funkeln " + EDELSTEINE[v].name + "."; }
+      hinweis: function (v) { return "In ihrer Krone sitzt " + EDELSTEINE[v].name + "."; }
     },
     burg: {
       name: "Burg",
       wer: "Die Burg",
-      varianten: ["rotkehlchen", "fisch", "loewe", "schlange"],
+      varianten: ["rot-gruen-orange", "blau-gruen-orange", "rot-blau-gruen"],
       zeichnen: burg,
       standard: "",
-      hinweis: function (v) { return "Auf ihren Fahnen ist " + WAPPEN[v].name + " zu sehen."; }
+      hinweis: function (v) { return "Ihre Fahnen sind " + FAHNEN[v].name + "."; }
     }
   };
   Object.keys(MOTIVE).forEach(function (id) {

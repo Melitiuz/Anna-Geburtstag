@@ -18,15 +18,20 @@ window.GEBURTSTAG = {
   // erst alle vier zusammen ergeben die Lösung (eindeutig, per Durchprobieren geprüft). Die Hinweise nennen bewusst keinen Platz und keine Variante direkt,
   // sondern mischen Verneinungen und Aussagen über Bezüge zu anderen Figuren. Ohne "hinweis" werden Platz und Variante direkt genannt.
   //   platz: "oben-links", "oben-rechts", "unten-links" oder "unten-rechts" (jeder Platz nur einmal)
-  //   burg: Fahnen mit "rotkehlchen" (rot), "fisch" (blau), "loewe" (gelb) oder "schlange" (grün)
-  //   prinzessin: drei "rubin", "smaragd", "saphir" oder "diamant" in der Krone
-  //   baum: "aepfel", "birnen", "kirschen" oder "pflaumen" | ritter: "links" oder "rechts"
+  //   burg: Fahnen "rot-gruen-orange" (waagerechte Streifen), "blau-gruen-orange" (blau mit grünem Schrägbalken und
+  //   orangem Punkt) oder "rot-blau-gruen" (senkrecht geteilt, absichtliche Falle: enthält Blau, passt aber nicht)
+  //   prinzessin: "rubin" (1 Stein), "saphir" (3 Steine) oder "smaragd" (5 Steine) in der Krone
+  //   baum: "orangen" (1), "kirschen" (2 Paare, also 4 Kirschen) oder "aepfel" (3, grün) | ritter: "links" oder "rechts"
   loesung: {
-    burg: { platz: "oben-rechts", variante: "schlange", hinweis: "Das Wappentier der Burg hat weder Federn noch Flossen. Sie thront direkt über dem Baum." },
-    prinzessin: { platz: "unten-links", variante: "rubin", hinweis: "Ihre Edelsteine haben die Farbe von Früchten, die der Baum tragen könnte, aber nicht trägt. Das Wappentier der Burg hat keine Mähne." },
-    baum: { platz: "unten-rechts", variante: "pflaumen", hinweis: "Der Baum trägt Früchte in einer Farbe, die weder eine Fahne noch ein Edelstein hat." },
-    ritter: { platz: "oben-links", variante: "links", hinweis: "Der Ritter reitet von der Burg weg, der untergehenden Sonne entgegen." }
+    burg: { platz: "oben-rechts", variante: "blau-gruen-orange", hinweis: "Die Fahnen der Burg tragen nicht die Farbe der Früchte." },
+    prinzessin: { platz: "unten-links", variante: "saphir", hinweis: "Die Farbe der Edelsteine findet sich auch in den Fahnen der Burg." },
+    baum: { platz: "unten-rechts", variante: "kirschen", hinweis: "Am Baum hängen mehr Früchte als Edelsteine in der Krone." },
+    ritter: { platz: "oben-links", variante: "links", hinweis: "Der Ritter reitet von der Burg weg, der Abendsonne entgegen." }
   },
+
+  // Versteckter 5. Hinweis: wird frei, wenn man nach dem Ritter-Labyrinth einen Apfel aus dem Obstkorb
+  // (Icon von Obst-Mastermind) per Drag and Drop an den Ritter verfüttert
+  geheimHinweis: "Der Baum steht vor den Toren der Burg.",
 
 
   // Quiz zum Thema Royals: Pro Runde werden zufällig Fragen aus dem Pool gezogen, je Bereich so viele wie in
