@@ -1,5 +1,10 @@
-/* Schriften: kräftige Überschriften, schmale Großbuchstaben für Knöpfe und Beschriftungen */
-@import url("https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Roboto:wght@400;500;700&family=Rubik:wght@800;900&display=swap");
+/* Schriften: kräftige Überschriften, schmale Großbuchstaben für Knöpfe und Beschriftungen.
+   Lokal eingebunden (Ordner schriften/, SIL Open Font License), damit nichts von Google-Servern geladen wird.
+   Rubik und Roboto sind variable Schriften: eine Datei für alle Stärken. */
+@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weight: 600; font-display: swap; src: url("../schriften/barlow-condensed-600.woff2") format("woff2"); }
+@font-face { font-family: "Barlow Condensed"; font-style: normal; font-weight: 700; font-display: swap; src: url("../schriften/barlow-condensed-700.woff2") format("woff2"); }
+@font-face { font-family: "Roboto"; font-style: normal; font-weight: 400 700; font-display: swap; src: url("../schriften/roboto.woff2") format("woff2"); }
+@font-face { font-family: "Rubik"; font-style: normal; font-weight: 800 900; font-display: swap; src: url("../schriften/rubik.woff2") format("woff2"); }
 
 :root {
   --bg: #050505;

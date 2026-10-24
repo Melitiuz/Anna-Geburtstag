@@ -94,7 +94,7 @@ Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Royals-Quiz → Prinzessin, 
 - Rein statische Website: HTML, CSS und JavaScript, kein Server, keine Datenbank
 - Mobile first: alle Spiele und das Drag and Drop müssen per Touch auf dem Handy funktionieren (Pointer Events, nicht HTML5 Drag and Drop)
 - Fortschritt im Browser speichern (localStorage, in try/catch), damit freigeschaltete Motive nicht verloren gehen
-- Keine externen Abhängigkeiten außer bei echtem Bedarf (einzige Ausnahme: Google Fonts)
+- Keine externen Abhängigkeiten: auch die Schriften liegen lokal in `site/schriften/`, nichts wird von fremden Servern geladen (Datenschutz)
 
 ## Hosting und Workflow
 - Code liegt im GitHub Repository https://github.com/Melitiuz/Anna-Geburtstag (der Nutzer stellt es selbst auf öffentlich)
@@ -108,7 +108,7 @@ Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Royals-Quiz → Prinzessin, 
   Rot `#d62b2b` als Akzent, rot umrandete Kästen, rote Knöpfe in schmalen Großbuchstaben, kräftige Überschriften
 - Spiele heißen "Quests" (Quest 1 bis 4), der letzte Schritt "Finale"
 - Kein Logo, keine Bilder und kein Name von Boda Borg auf der Seite, nur der Stil
-- Schriften über Google Fonts (`@import` in `stil.css`): Rubik (Überschriften), Barlow Condensed (Knöpfe, Beschriftungen), Roboto (Text)
+- Schriften lokal eingebunden (`@font-face` in `stil.css`, Dateien und OFL-Lizenztexte in `site/schriften/`): Rubik (Überschriften), Barlow Condensed (Knöpfe, Beschriftungen), Roboto (Text)
 - Die Figuren sind angelehnt an die iPhone-Emojis gezeichnet (Vorlage: Burg-Emoji vom Handy des Nutzers; Burg aus grauem
   Stein mit hohem Mittelturm, zwei Seitentürmen mit roten Spitzdächern, Holztor). Bewusst nicht künstlich: matte,
   natürliche Farben und Materialien (unregelmäßige Steine, Holz, buschiges Laub, Stoff mit Falten, Fell), organische
