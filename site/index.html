@@ -301,14 +301,14 @@
         o.innerHTML =
           '<div class="karte" role="dialog" aria-modal="true">' +
           '<div style="font-size:3.5rem" aria-hidden="true">🎁</div>' +
-          "<h2></h2><p class=\"text\"></p>" +
+          "<h2></h2><p class=\"text reim\" style=\"white-space:pre-line\"></p>" +
           (N.link ? '<p><a class="knopf" target="_blank" rel="noopener"></a></p>' : "") +
-          '<p class="leise" style="font-style:italic"></p>' +
+          (N.gruss ? '<p class="leise" style="font-style:italic"></p>' : "") +
           '<p><button class="knopf zweit" type="button">Schließen</button></p>' +
           "</div>";
         o.querySelector("h2").textContent = N.titel;
         o.querySelector(".text").textContent = N.text;
-        o.querySelector(".leise").textContent = N.gruss;
+        if (N.gruss) o.querySelector(".leise").textContent = N.gruss;
         if (N.link) {
           var a = o.querySelector("a");
           a.href = N.link;

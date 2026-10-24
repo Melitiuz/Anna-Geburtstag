@@ -3,14 +3,17 @@ window.GEBURTSTAG = {
   name: "Anna",
 
   // Erscheint als Popup, wenn alle vier Figuren richtig im Feld liegen.
-  // link ist optional: leer lassen ("") wenn kein Knopf erscheinen soll.
+  // link ist optional: leer lassen ("") wenn kein Knopf erscheinen soll. Ebenso gruss (leer = kein Gruß).
   nachricht: {
-    // Text ist noch ein Platzhalter und wird später ergänzt
-    titel: "Herzlichen Glückwunsch, Anna!",
-    text: "Du hast alle Spiele gemeistert und das Bild vervollständigt. Ich wünsche dir einen wunderschönen Geburtstag voller Freude und Überraschungen. Dein Geschenk wartet hier auf dich:",
+    // Zeilenumbrüche im Text (\n) werden im Popup übernommen
+    titel: "Herzlichen Glückwunsch!",
+    text: "Alle Quests sind gemeistert, das Bild ist vollbracht,\n" +
+      "jetzt wird ein wahres Abenteuer gemacht!\n" +
+      "Echte Quests warten, Raum für Raum,\n" +
+      "ein gemeinsames Abenteuer wie aus einem Traum.",
     link: "https://www.bodaborg.de/bochum/",
     linkText: "Zum Geschenk",
-    gruss: "Alles Liebe"
+    gruss: ""
   },
 
   // Richtiger Platz im 2 x 2 Feld und richtige Variante jeder Figur.

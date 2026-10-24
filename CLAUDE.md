@@ -122,7 +122,7 @@ Zuordnung Spiel zu Motiv: Obst-Mastermind → Baum, Royals-Quiz → Prinzessin, 
 ## Offene Punkte
 - [x] Name der beschenkten Person: Anna
 - [x] Geschenk-Link: https://www.bodaborg.de/bochum/
-- [ ] Nachricht zum Geschenk (Text folgt)
+- [x] Nachricht zum Geschenk (Reim in config.js, Titel "Herzlichen Glückwunsch!", ohne Gruß)
 - [x] Spiele: Obst-Mastermind, Royals-Quiz, Brückenritt (Geschicklichkeit), Ritter-Labyrinth
 - [x] Quizfragen: 50 Fragen zum Thema Royals (auch Japan), 10 pro Runde
 - [x] Fotos für die 10 "Wer ist das?"-Fragen (Wikimedia Commons, freie Lizenzen, Nachweis auf bildnachweis.html)

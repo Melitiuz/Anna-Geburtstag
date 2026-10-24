@@ -65,6 +65,7 @@ p { margin: 0 0 12px; }
 .kopf .unterzeile { color: var(--text-leise); }
 /* Reim auf der Startseite: auf schmalen Handys kleiner, damit jede Verszeile in eine Zeile passt */
 .reim { font-size: min(1rem, 3.55vw); }
+.overlay .reim { font-size: min(1rem, 3.25vw); }
 
 .zurueck {
   display: inline-flex;
