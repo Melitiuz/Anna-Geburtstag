@@ -179,9 +179,7 @@
         verfuegbar = liste;
         ANZAHL = Math.min(Object.keys(QUOTE).reduce(function (s, b) { return s + QUOTE[b]; }, 0), verfuegbar.length);
         MINDESTENS = Math.min(Q.mindestensRichtig || ANZAHL, ANZAHL);
-        document.getElementById("regel").textContent =
-          "Beantworte " + ANZAHL + " Fragen rund um die Königshäuser der Welt. Ob eine Antwort stimmt, erfährst du erst am Ende. " +
-          (MINDESTENS === ANZAHL ? "Nur wenn alle richtig sind, ist die Quest gelöst." : "Mindestens " + MINDESTENS + " müssen richtig sein.");
+        document.getElementById("regel").textContent = "Beweise dein Wissen rund um die Königshäuser der Welt.";
         start();
       });
     })();
